@@ -36,7 +36,7 @@ var methods = {/* 全局方法 */
 
 };
 
-require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components/v2.input'], function (Vue, button, buttonGroup, input) {/* 引用库、插件 */
+require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components/v2.input', 'components/v2.inputGroup'], function (Vue, button, buttonGroup, input, inputGroup) {/* 引用库、插件 */
     button({
         dropdown: true,
         addClass: 'btn-primary',
@@ -106,18 +106,50 @@ require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components
     });
     var v = buttonGroup({
         $: '#test-group',
-        data: {
-            buttons: [{
-                text: '确定',
-                width: 120,
+        data: [{
+            text: '确定',
+            width: 120,
+            addClass: 'btn-primary',
+            events: {
+                click: 'click'
+            }
+        }, {
+            //text: '确定',
+            //width: 120,
+            //disabled: true,
+            dropdown: true,
+            addClass: 'btn-primary',
+            data: [{
+                id: 1,
+                text: '测试'
+            }],
+            events: {
+                $click: function () {
+                    console.log(this.selectedIndex);
+                }
+            }
+        }],
+        methods: {
+            click: function () {
+                console.log('click');
+            }
+        }
+    });
+    window.inputGroup = inputGroup({
+        data: [{
+            tag: 'button-group',
+            data: [{
+                text: 'Action',
                 addClass: 'btn-primary',
                 events: {
                     click: 'click'
+                },
+                methods: {
+                    click: function () {
+                        console.log('click');
+                    }
                 }
             }, {
-                //text: '确定',
-                //width: 120,
-                //disabled: true,
                 dropdown: true,
                 addClass: 'btn-primary',
                 data: [{
@@ -125,17 +157,20 @@ require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components
                     text: '测试'
                 }],
                 events: {
-                    $click: function () {
-                        console.log(this.selectedIndex);
+                    click: 'click'
+                },
+                methods: {
+                    click: function () {
+                        console.log('click');
                     }
                 }
             }]
-        },
-        methods: {
-            click: function () {
-                console.log('click');
-            }
-        }
+        }, {
+            tag: 'input',
+            type: 'checkbox'
+        }, {
+            tag: 'input'
+        }]
     });
     var vm = new Vue({
 

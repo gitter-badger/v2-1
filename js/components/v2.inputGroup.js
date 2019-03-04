@@ -11,43 +11,67 @@
                 return require('components/v2.buttonGroup');
             }
         },
-        buttonGroup: function () {
+        inputGroup: function () {
             /** 超小按钮 */
             this.xs = false;
             /** 小按钮 */
             this.sm = false;
             /** 大按钮 */
             this.lg = false;
-            /** 纵向排列 */
-            this.vertical = false;
-        },
-        init: function () {
-            this.base.init();
         },
         render: function () {
             this.base.render();
-            this.addClass(this.vertical ? 'btn-group-vertical' : 'btn-group');
+            this.addClass('input-group');
             if (this.lg || this.sm || this.xs) {
-                this.addClass(this.lg ? 'btn-group-lg' : this.sm ? 'btn-group-sm' : 'btn-group-xs');
+                this.addClass(this.lg ? 'input-group-lg' : this.sm ? 'input-group-sm' : 'input-group-xs');
             }
         },
+        usb: function () {
+            this.base.usb();
+            this.define({
+                value: {
+                    set: function (value) {
+                        var i = 0, val, control;
+                        while (control = this.controls[i++]) {
+                            if (control.tag !== 'input') continue;
+                            val = value.shift();
+                            if ((control.type === 'checkbox' || control.type === 'radio') && typeof val === 'boolean') {
+                                control.checked = val;
+                                continue;
+                            }
+                            control.value = val + "";
+                        }
+                    },
+                    get: function () {
+                        var i = 0, control, obj, value = [];
+                        while (control = this.controls[i++]) {
+                            if (control.tag !== 'input') continue;
+                            value.push(obj = {
+                                name: control.name,
+                                value: control.value
+                            });
+                            if (control.type === 'checkbox' || control.type === 'radio') {
+                                obj.checked = control.checked;
+                            }
+                        }
+                        return value;
+                    }
+                }
+            });
+        },
         resolve: function (data) {
-            v2.each(data.controls, function (option) {
+            v2.each(data, function (option) {
                 if (v2.isString(option)) {
-                    return this.append('<span class="input-group-addon">' + option + '</span>');
+                    return this.append(('span.input-group-addon{' + option + '}').htmlCoding());
+                }
+                if (option.tag === 'input' && (option.type === 'radio' || option.type === 'checkbox')) {
+                    option.$$ = this.append('span.input-group-addon'.htmlCoding()).last();
                 }
                 return this.constructor(option.tag, option);
             }, this);
-            var elem = this.take('> ul:last-child');
-            if (elem && (elem = v2.sibling(elem, 'previousSibling'))) {
-                this.css({
-                    'border-top-right-radius': '0.25em',
-                    'border-bottom-right-radius': '0.25em'
-                }, elem);
-            }
         }
     });
     return function (options) {
-        return v2('button-group', options);
+        return v2('input-group', options);
     };
 });

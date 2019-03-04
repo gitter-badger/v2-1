@@ -17,9 +17,8 @@
 interface String {
     /**
      * 将字符串编译为函数。
-     * @param string 需要编译的字符串。
      */
-    toCode(string: string): (object: object, main: boolean) => any;
+    toCode(): (object: object, main: boolean) => any;
     /**
      * 格式化字符串。
      * @param objectN 参数。

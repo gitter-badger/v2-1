@@ -487,10 +487,10 @@
                     valueSet(my.ymd[0], my.ymd[1], my.ymd[2], my.hms[0], my.hms[1], my.hms[2]);
                 }
             });
-            this.$master.on('click', this.$touch, function () {
+            this.master.on('click', this.$touch, function () {
                 my.show();
             });
-            var touch = this.$touch ? this.$touch.$ || this.$touch : this.$master.$,
+            var touch = this.$touch ? this.$touch.$ || this.$touch : this.master.$,
                 isString = v2.isString(touch);
             v2.on(document, 'click', function (e) {
                 var elem = e.target || e.srcElement;

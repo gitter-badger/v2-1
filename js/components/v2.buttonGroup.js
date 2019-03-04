@@ -15,20 +15,18 @@
             /** 纵向排列 */
             this.vertical = false;
         },
-        init: function () {
-            this.base.init();
-        },
         render: function () {
             this.base.render();
-            this.addClass(this.vertical ? 'btn-group-vertical' : 'btn-group');
+            this.addClass(this.vertical ? 'btn-group-vertical' : this.master && this.master.tag === 'input-group' ? 'input-group-btn' : 'btn-group');
             if (this.lg || this.sm || this.xs) {
                 this.addClass(this.lg ? 'btn-group-lg' : this.sm ? 'btn-group-sm' : 'btn-group-xs');
             }
         },
         resolve: function (data) {
-            v2.each(data.buttons, function (options) {
+            v2.each(data, function (options) {
                 return this.constructor('button', options);
             }, this);
+            if (this.master && this.master.tag === 'input-group') return;
             var elem = this.take('> ul:last-child');
             if (elem && (elem = v2.sibling(elem, 'previousSibling'))) {
                 this.css({

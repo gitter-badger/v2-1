@@ -31,9 +31,9 @@
             });
         }
     };
-    v2.use('button', 'dropdown && (!$master || !($master.tag === "button" || $master.tag === "button-group"))', v2.extend({
+    v2.use('button', 'dropdown && (!master || !(master.tag === "button" || master.tag === "button-group"))', v2.extend({
         render: function () {
-            this.addClass('btn-group');
+            this.addClass(this.master && this.master.tag === 'input-group' ? 'input-group-btn' : 'btn-group');
             if (this.lg || this.sm || this.xs) {
                 this.addClass(this.lg ? 'btn-group-lg' : this.sm ? 'btn-group-sm' : 'btn-group-xs');
             }
@@ -79,24 +79,23 @@
                     }
                 }, true);
             if (this.dropdown) {
-                var my = this;
                 this.define('selectedIndex', {
                     get: function () {
-                        return my.$sharp.selectedIndex;
+                        return this.$sharp.selectedIndex;
                     },
                     set: function (index) {
-                        my.$sharp.selectedIndex = index;
+                        this.$sharp.selectedIndex = index;
                     }
                 }, true).define('selectedValue', {
                     get: function () {
-                        return my.$sharp.selectedValue;
+                        return this.$sharp.selectedValue;
                     }
                 });
             }
         },
         resolve: function (data) {
             if (this.dropdown) {
-                this.$sharp = this.constructor('select', { $$: this.$$, $master: this.$master, $touch: this, data: data });
+                this.$sharp = this.constructor('select', { $$: this.$$, master: this.master, $touch: this, data: data });
             }
         }
     }));

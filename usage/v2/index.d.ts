@@ -458,10 +458,14 @@
          * @param arr 数组
          */
         when(arr: ArrayLike<any>): ArrayThen,
-        /** 返回主元素的第一个有效元素 */
+        /** 返回主元素的第一个元素 */
         first(): Element,
-        /** 返回主元素的最后一个有效元素 */
-        last(): Element
+        /** 返回主元素的最后一个元素 */
+        last(): Element,
+        /** 返回主元素的上一个兄弟元素 */
+        prev(): Element,
+        /** 返回主元素的下一个兄弟元素 */
+        next(): Element
     }
     /** 控件 */
     interface V2Control extends V2ControlBase {
@@ -489,7 +493,7 @@
         /** 入参变量(入参) */
         readonly variable: PlainObject,
         /** 母控件 */
-        readonly $master: V2Control,
+        readonly master: V2Control,
         /** 为真时采用“max-width”和“max-height”限制控件大小，否则采用“width”和“height”限制控件大小. 默认：false*/
         limit: boolean,
         /** 是否加载控件的时候加载数据，为真并且存在“ajax”方法时，在“render”方法完成后自动调用“ajax”方法并等待数据加载完成后继续渲染控件，否则控件直接渲染完成。默认：false */

@@ -794,3 +794,8 @@ interface V2kitStatic {
      */
     htmlSerialize(html: Yep.htmlString): string
 }
+
+interface String {
+    /** 将字符串转为Html */
+    htmlCoding(): string
+}

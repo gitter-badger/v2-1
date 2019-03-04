@@ -113,7 +113,7 @@
         }
     }
 
-    function check_destroy(elem, callback) {
+    function checkDestroy(elem, callback) {
         if (!elem) return false;
         if (callback(elem)) return true;
         return v2.any(elem.parentNode.childNodes, function (node) {
@@ -129,13 +129,14 @@
             value = object[i];
             if (value && deep && value !== object) {
                 if (value.destroy && value.v2version === version) {
+                    if (i === 'master') continue;
                     value.destroy(deep);
                 } else if (value.jquery) {
-                    if (check_destroy(elem, function (node) { return value.is(node); })) {
+                    if (checkDestroy(elem, function (node) { return value.is(node); })) {
                         value.remove();
                     }
                 } else if (value.nodeType) {
-                    if (check_destroy(elem, function (node) { return value === node; })) {
+                    if (checkDestroy(elem, function (node) { return value === node; })) {
                         value.parentNode.removeChild(value);
                     }
                 } else if (v2.isPlainObject(value)) {
@@ -264,12 +265,13 @@
     }
     var defineSurport = true;
     v2.define = function (obj, name, attributes) {
-        if (!obj || !name || !attributes || !defineSurport) return obj;
+        if (!obj || !name || !defineSurport) return obj;
         if (v2.isPlainObject(name)) {
             return v2.each(name, function (attributes, name) {
                 return v2.define(obj, name, attributes);
             });
         }
+        if (!attributes) return obj;
         var value = obj[name];
         v2.deleteCb(obj, name);
         if (attributes === true) {
@@ -424,11 +426,22 @@
         if (args.length === 3) return callback.call(context, args[0], args[1], args[2]);
         return callback.apply(context, sliced ? args : core_slice.call(args));
     }
+
     function HTMLColection(tag) {
         var tagColection = (new Function('return function ' + tag.charAt(0).toUpperCase() + tag.slice(1) + 'Colection(tag){ this.tag = tag; }'))();
         tagColection.prototype = {
             constructor: tagColection,
-            length: 0
+            length: 0,
+            add: function (control) {
+                this[this.length] = control;
+                this.length += 1;
+            },
+            remove: function (control) {
+                if (!control) return;
+                var index = core_indexOf.call(this, control);
+                if (index === -1) return;
+                core_splice.call(this, i, 1);
+            }
         };
         return new tagColection(tag);
     };
@@ -471,23 +484,102 @@
     };
     ArrayThen.prototype.nth = ArrayThen.prototype.eq;
 
+    function UseThen(tag) {
+        this.tag = tag;
+    }
+    UseThen.prototype = {
+        length: 0,
+        when: function (when, option) {
+            if (v2.isString(when)) {
+                var arr = [];
+                when.replace(rvariable, function (_, _quotes, variable) {
+                    if (variable && arr.indexOf(variable) === -1) {
+                        arr.push(variable);
+                    }
+                });
+                if (!rreturn.test(when)) {
+                    when = 'return ' + when;
+                }
+                when = new Function('option', (arr.length && 'var ' + arr.join(',') + ';') + 'with(option){' + when + '}');
+            }
+            if (option) option.tag = this.tag;
+            this[this.length] = { when: when, option: option };
+            this.length += 1;
+        },
+        then: function (option) {
+            var i = 0, use;
+            while (use = this[i++]) {
+                if (use.when(option || (option = {}))) return use.option;
+            }
+        }
+    };
+
+    function V2Collection() { }
+    V2Collection.prototype = {
+        length: 0,
+        add: function (control) {
+            this[this.length] = control;
+            this.length += 1;
+            return control;
+        },
+        eq: function (i) {
+            i = i < 0 ? this.length + i : i;
+            return this[i] || null;
+        },
+        destroy: function (control) {
+            var i = 0;
+            if (arguments.length > 0) {
+                i = core_indexOf.call(this, control);
+                return core_splice.call(this, i, 1);
+            }
+            while (control = this[i++]) {
+                control.destroy();
+            }
+        },
+        offset: function (control, offset) {
+            var index = core_indexOf.call(this, control);
+            if (index === -1) return null;
+            return this[index + offset] || null;
+        }
+    };
+
+    var GDir = makeCache(function (tag) {
+        tag = v2.camelCase(tag);
+        var tagColection = (new Function('return function ' + tag.charAt(0).toUpperCase() + tag.slice(1) + 'Colection(tag){ this.tag = tag; }'))();
+        tagColection.prototype = {
+            constructor: tagColection,
+            length: 0,
+            add: function (control) {
+                this[this.length] = control;
+                this.length += 1;
+            },
+            remove: function (control) {
+                if (!control) return;
+                var index = core_indexOf.call(this, control);
+                if (index === -1) return;
+                core_splice.call(this, i, 1);
+            }
+        };
+        return v2[tag + 's'] = new tagColection(tag);
+    });
+
     var identity = 0,
         CurrentV2Control = null;
     var xhtmlNode = document.createElement('div');
     v2.fn = v2.prototype = {
         constructor: function (tag, options) {
             options = options || {};
-            options.$master = options.$master || this;
-            options.$$ = options.$$ || options.$master.$;
+            options.master = options.master || this;
+            options.$$ = options.$$ || options.master.$;
 
             this.$components = this.$components || {};
 
             var component = this.components[tag = v2.camelCase(tag)];
 
             if (v2.isFunction(component)) {
-                return (this.$components[tag] || (this.$components[tag] = component(tag)))(options, tag);
+                return this.controls.add((this.$components[tag] || (this.$components[tag] = component(tag)))(options, tag));
             }
-            return v2(tag, component ? v2.improve(options, component) : options);
+            return this.controls.add(v2(tag, component ? v2.improve(options, component) : options));
         },
         tag: "*",
         v2version: version,
@@ -497,7 +589,7 @@
         visible: true,
         $: null,
         $$: null,
-        $master: null,
+        master: null,
         template: '',
         data: null,
         events: {},
@@ -529,7 +621,7 @@
                     },
                     set: (contains || userDefined) ?
                         function (value) {
-                            extra.call(my, (node[name] = value) || node[name]);
+                            extra.call(this, (node[name] = value) || node[name]);
                         } :
                         function (value) {
                             if (typeof value === 'boolean') {
@@ -545,7 +637,7 @@
                                 } else {
                                     node.setAttribute(name, value + '');
                                 }
-                                extra.call(my, node.getAttribute(name));
+                                extra.call(this, node.getAttribute(name));
                             }
                         }
                 });
@@ -616,6 +708,12 @@
         },
         last: function () {
             return this.$.lastElementChild || v2.sibling(this.$.lastChild, 'previousSibling', true);
+        },
+        prev: function () {
+            return this.$.previousElementSibling || v2.sibling(this.$, 'previousSibling');
+        },
+        next: function () {
+            return this.$.nextElementSibling || v2.sibling(this.$, 'nextSibling');
         },
         baseConfigs: function (option) {
             this.base = this.base || {};
@@ -745,20 +843,18 @@
                     }
                     base[key] = makeCallback(value, key);
                 },
-                initControls = function (option, isArrayPro) {
+                initControls = function (option, statement) {
                     if (!option) return option;
-                    type = v2.type(option);
-                    if (isArrayPro === true && type === "array") return v2.each(option, initControls);
                     tag = option.tag;
+                    type = v2.type(option);
                     if (isFunction = type === "function") {
-                        namespace += "." + tag;
                         option.call(context, context.option || {});
                     } else if (tag && (fn = option[v2.camelCase(tag)]) && v2.isFunction(fn)) {
                         fn.call(context, option);
                     }
                     var _value, _contains;
                     v2.each(isFunction ? option.prototype : option, function (value, key) {
-                        if (key === tag || value == null) return;
+                        if (key === tag || key === 'constructor' || value == null) return;
 
                         _contains = true;
 
@@ -804,7 +900,7 @@
                                 }
                                 break;
                             case "string":
-                                if (key === "tag") {
+                                if (statement && key === "tag") {
                                     namespace += "." + value;
                                 }
                             default:
@@ -853,6 +949,39 @@
             this.tag = tag;
             this.option = option;
             this.baseConfigs(option);
+
+            var controls = new V2Collection();
+
+            v2.define(this, {
+                controls: {
+                    get: function () {
+                        return controls;
+                    }
+                },
+                firstChild: {
+                    get: function () {
+                        return this.controls.eq(0);
+                    }
+                },
+                lastChild: {
+                    get: function () {
+                        return this.controls.eq(-1);
+                    }
+                },
+                previousSibling: {
+                    get: function () {
+                        if (this.master == null) return null;
+                        return this.master.controls.offset(my, -1);
+                    }
+                },
+                nextSibling: {
+                    get: function () {
+                        if (this.master == null) return null;
+                        return this.master.controls.offset(my, 1);
+                    }
+                }
+            });
+
             this.build();
             if (this.ajax && this.access) {
                 render = this.render;
@@ -936,8 +1065,8 @@
         render: function (variable) {
             v2.each(this.namespace.split("."), function (tag) {
                 if (rtag.test(tag)) {
-                    var name = v2.camelCase(tag);
-                    v2.merge(v2[name + "s"] || (v2[name + "s"] = HTMLColection(name)), [this]);
+                    var dir = GDir(tag);
+                    dir.add(this);
                 }
             }, this);
             renderWildCard(this, 'function', variable);
@@ -988,13 +1117,14 @@
         destroy: function (deep) {
             v2.each(this.namespace.split("."), function (tag) {
                 if (rtag.test(tag)) {
-                    var name = v2.camelCase(tag);
-                    var collect = v2[name + "s"];
-                    if (collect && (index = core_indexOf.call(collect, this)) > -1) {
-                        core_splice.call(collect, index, 1);
-                    }
+                    var dir = GDir(tag);
+                    dir.remove(this);
                 }
             }, this);
+
+            this.master.controls.destroy(this);
+            this.controls.destroy();
+
             destroyObject(this.base, true);//基础对象始终深度释放。
             destroyObject(this, deep);
         }
@@ -1326,37 +1456,7 @@
             "|native|package|private|protected|public|short|static|super|synchronized|throws|transient|volatile|true|false",
         rvariable = new RegExp("(['\"])(?:\\\\.|[^\\\\])*?\\1|((?!\\b(?:" + keywords + ")\\b)[\\w$]+)(\\.[\\w$]+)*", 'g'),
         useThenCache = makeCache(function (tag) {
-            function UseThen() {
-                this.tag = tag;
-            }
-            UseThen.prototype = {
-                length: 0,
-                when: function (when, option) {
-                    if (v2.isString(when)) {
-                        var arr = [];
-                        when.replace(rvariable, function (_, _quotes, variable) {
-                            if (variable && arr.indexOf(variable) === -1) {
-                                arr.push(variable);
-                            }
-                        });
-                        if (!rreturn.test(when)) {
-                            when = 'return ' + when;
-                        }
-                        when = new Function('option', (arr.length && 'var ' + arr.join(',') + ';') + 'with(option){' + when + '}');
-                    }
-                    var length = this.length;
-                    if (option) option.tag = this.tag;
-                    this[length] = { when: when, option: option };
-                    this.length = length + 1;
-                },
-                then: function (option) {
-                    var i = 0, use;
-                    while (use = this[i++]) {
-                        if (use.when(option || (option = {}))) return use.option;
-                    }
-                }
-            };
-            return new UseThen();
+            return new UseThen(tag);
         });
     var use = namespaceCached(function (_namespace, tag, option, when) {
         var then = useThenCache(tag);
@@ -2900,7 +3000,7 @@
                             fn = control.methods[fn];
                             break;
                         }
-                    } while (control = control.$master);
+                    } while (control = control.master);
                 }
                 control = null;
             }
@@ -3093,6 +3193,10 @@
         }
     });
     v2.htmlSerialize = htmlSerialize;
+
+    String.prototype.htmlCoding = function () {
+        return htmlSerialize(this);
+    };
 
     function noop() { }
 

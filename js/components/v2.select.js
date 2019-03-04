@@ -53,12 +53,12 @@
         },
         show: function () {
             this.base.show();
-            this.$master.addClass('open');
+            this.master.addClass('open');
             return false;
         },
         hide: function () {
             this.base.hide();
-            this.$master.removeClass('open');
+            this.master.removeClass('open');
             return false;
         },
         commit: function () {
@@ -67,10 +67,10 @@
             this.on('click', '[data-index]:not(.disabled)', function () {
                 my.selectedIndex = +v2.attr(this, 'data-index');
             });
-            this.$master.on('click', this.$touch, function () {
+            this.master.on('click', this.$touch, function () {
                 my.toggle();
             });
-            var touch = this.$touch ? this.$touch.$ || this.$touch : this.$master.$,
+            var touch = this.$touch ? this.$touch.$ || this.$touch : this.master.$,
                 isString = v2.isString(touch);
             v2.on(document, 'click', function (e) {
                 var elem = e.target || e.srcElement;
