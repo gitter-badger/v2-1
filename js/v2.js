@@ -922,14 +922,13 @@
                     return visible;
                 },
                 set: function (value) {
-                    if (visible === undefined || visible === !value) {
-                        if (visible = !!value) {
-                            if (my.show() !== false)
-                                my.css('display', display);
-                        } else {
-                            if (my.hide() !== false)
-                                my.css('display', 'none');
-                        }
+                    if (visible === value) return;
+                    if (visible = !!value) {
+                        if (my.show() !== false)
+                            my.css('display', display);
+                    } else {
+                        if (my.hide() !== false)
+                            my.css('display', 'none');
                     }
                 }
             }, true);
