@@ -1359,18 +1359,16 @@
             };
             return new UseThen();
         });
-    var
-        useCache = {},
-        use = namespaceCached(function (_namespace, tag, option, when) {
-            var then = useThenCache(tag);
-            then.when(when || returnTrue, option);
-            if (tag in useCache) return false;
-            return then;
-        }, function () {
-            return new Array();
-        }, function (results, value) {
-            results.unshift(value);
-        });
+    var use = namespaceCached(function (_namespace, tag, option, when) {
+        var then = useThenCache(tag);
+        then.when(when || returnTrue, option);
+        if (then.length > 1) return false;
+        return then;
+    }, function () {
+        return new Array();
+    }, function (results, value) {
+        results.unshift(value);
+    });
     v2.extend({
         use: function (tag, when, option) {
             if (arguments.length < 3) {
