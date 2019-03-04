@@ -289,6 +289,8 @@
          * @param value 属性名称(多个时，用空格分开)
          */
         removeProp(elem: Element, value: string): V2Control,
+        /** 获取控件宽度 */
+        width(): number | string,
         /**
          * 设置控件宽度
          * @param width 宽度
@@ -301,6 +303,8 @@
          * @returns 是否设置成功
          */
         width(width: string): boolean,
+        /** 获取控件高度 */
+        height(): number | string,
         /**
          * 设置控件高度
          * @param width 高度
@@ -468,7 +472,7 @@
          */
         constructor(tag: string, options: V2ControlExtensions): V2ControlExtensions,
         /** 【yes】版本号 */
-        readonly yep: string,
+        readonly v2version: string,
         /** tag名称 */
         readonly tag: string,
         /** 控件身份ID */
@@ -564,6 +568,20 @@
          * @param callback 分别执行当前数组中的元素。
          */
         done(callback: (value: T, index: number, array: ArrayThen<T>) => any): ArrayThen<T>
+    }
+    /** use 数组 */
+    interface UseThen<T extends V2Control = V2ControlExtensions> extends Array<T> {
+        /**
+         * 设置条件配置
+         * @param when 条件函数
+         * @param option 配置信息
+         */
+        when(when: (option: PlainObject) => boolean, option: T): any;
+        /**
+         * 查询返回所有条件过滤器中，option满足条件的第一个配置信息。
+         * @param option
+         */
+        then(option: PlainObject): T;
     }
 }
 

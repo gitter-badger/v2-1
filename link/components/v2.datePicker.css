@@ -50,8 +50,8 @@
         list-style: none;
     }
 
-    .date-picker .date-picker-void {
-        cursor: text !important;
+    .date-picker .date-void {
+        cursor: not-allowed !important;
     }
 
     .date-picker a, .date-picker a:hover {
@@ -74,10 +74,6 @@
         overflow: hidden;
         cursor: pointer;
     }
-
-    /*.date-picker .date-picker-hms-c {
-        display: none;
-    }*/
 
     .date-picker .date-picker-show {
         display: block;
@@ -157,10 +153,10 @@
                 overflow: hidden;
                 white-space: nowrap;
             }
-
 .date-picker-m {
     width: 99px;
 }
+
 
     .date-picker-m .date-picker-yms {
         width: 99px;
@@ -271,14 +267,15 @@
     bottom: 26px;
     width: 129px;
     height: 125px;
+    z-index: 100;
     *overflow: hidden;
 }
 
-    .date-picker-hms-c .date-picker-hmsno {
+    .date-picker-hms-c .date-hmsno {
         padding: 5px 0 0 5px;
     }
 
-        .date-picker-hms-c .date-picker-hmsno span {
+        .date-picker-hms-c .date-hmsno span {
             display: block;
             float: left;
             width: 24px;
@@ -290,15 +287,15 @@
         }
 
 .date-picker-ms {
-    width: 228px;
+    width: 226px;
     height: 154px;
 }
 
-    .date-picker-ms .date-picker-hmsno {
+    .date-picker-ms .date-hmsno {
         padding: 6px 0 0 8px;
     }
 
-        .date-picker-ms .date-picker-hmsno span {
+        .date-picker-ms .date-hmsno span {
             width: 21px;
             height: 20px;
             line-height: 20px;
@@ -309,8 +306,20 @@
     bottom: 67px;
     width: 141px;
     height: auto;
+    -moz-transition: opacity .2s;
+    -o-transition: opacity .2s;
+    -webkit-transition: opacity .2s;
+    transition: opacity .2s;
     overflow: hidden;
+    visibility: visible;
+    opacity: 1;
 }
+
+    .date-picker-msg.hidden {
+        display: block;
+        visibility: hidden;
+        opacity: 0;
+    }
 
     .date-picker-msg p {
         padding: 5px 10px;
@@ -331,7 +340,6 @@
 }
 
 .date-picker-footer input {
-    float: left;
     width: 21px;
     height: 20px;
     line-height: 20px;
@@ -342,13 +350,13 @@
     font-weight: 400;
 }
 
-.date-picker-footer .laydte-hsmtex {
+.date-picker-footer .date-hsmtex {
     height: 20px;
     line-height: 20px;
     text-align: center;
 }
 
-    .date-picker-footer .laydte-hsmtex span {
+    .date-picker-footer .date-hsmtex span {
         position: absolute;
         width: 20px;
         top: 0;
@@ -356,7 +364,7 @@
         cursor: pointer;
     }
 
-        .date-picker-footer .laydte-hsmtex span:hover {
+        .date-picker-footer .date-hsmtex span:hover {
             font-size: 14px;
         }
 

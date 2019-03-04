@@ -74,24 +74,24 @@
                 }
                 if (control.type === "number") {
                     if (validity.rangeUnderflow) {
-                        return v2.format("值必须大于或等于{0}。", control.min);
+                        return "值必须大于或等于{0}。".format(control.min);
                     }
                     if (validity.rangeOverflow) {
-                        return v2.format("值必须小于或等于{0}。", control.max);
+                        return "值必须小于或等于{0}。".format(control.max);
                     }
                 }
                 var value = control.value;
                 if (validity.typeMismatch) {
                     if (control.type === "email") {
                         var index = value.indexOf("@");
-                        return v2.format(index > -1 ? "请在“@”内容" + (index > 0 ? "后面" : "前面") + "输入内容。{0}内容不完整。" : "请在邮箱地址中包含“@”。{0}缺少“@”。", value);
+                        return (index > -1 ? "请在“@”内容" + (index > 0 ? "后面" : "前面") + "输入内容。{0}内容不完整。" : "请在邮箱地址中包含“@”。{0}缺少“@”。").format(value);
                     }
                 }
                 if (validity.tooShort) {
-                    return v2.format("值必须大于或等于{0}个字符。", control.minlength);
+                    return "值必须大于或等于{0}个字符。".format(control.minlength);
                 }
                 if (validity.tooLong) {
-                    return v2.format("值必须小于或等于{0}个字符。", control.maxlength);
+                    return "值必须小于或等于{0}个字符。".format(control.maxlength);
                 }
             },
             reportValidity: function () {
@@ -260,7 +260,14 @@
         },
         resolve: function () {
             if (this.type === 'date' || this.type === 'time' || this.type === 'datetime' || this.type === 'datetime-local') {
-                this.$sharp = this.constructor('date-picker', { $$: document.body, $touch: this });
+                this.$sharp = this.constructor('date-picker', {
+                    visible: false,
+                    $touch: this,
+                    $$: document.body,
+                    min: this.invoke("date-min"),
+                    max: this.invoke("date-max"),
+                    format: this.type === 'date' ? 'yyyy-MM-dd' : this.type === 'time' ? 'HH:mm' : this.type === 'datetime' ? 'yyyy-MM-dd HH:mm:ss' : 'yyyy-MM-dd HH:mm'
+                });
             }
         },
         commit: function () {
@@ -273,12 +280,6 @@
                         this.checked = true;
                     }
                     return false;
-                });
-            }
-
-            if (this.type === 'date' || this.type === 'time' || this.type === 'datetime' || this.type === 'datetime-local') {
-                this.on('$click', function () {
-                    this.$sharp.show();
                 });
             }
 

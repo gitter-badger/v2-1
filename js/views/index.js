@@ -55,6 +55,14 @@ require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components
         events: {
             $click: 'click'
         },
+        'date-min': function () {
+            var date = new Date();
+            return '{0}-{1}-{2} {3}:{4}:{5}'.format(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+        },
+        'date-max': function () {
+            var date = new Date();
+            return '{0}-{1}-{2} {3}:{4}:{5}'.format(date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+        },
         inputChange: function (value) {
             console.log(value);
         },

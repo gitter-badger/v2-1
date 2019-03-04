@@ -9,12 +9,12 @@
 (function (global, factory) {
     return typeof exports === 'object' && typeof module === "object" ?
         module.exports = global.document ?
-            factory(global)
-            :
+            factory(global) :
             function (window) {
                 if (window.document == null) throw new Error("v2 requires a window with a document");
                 return factory(window);
-            } : factory(global);
+            } :
+        factory(global);
 })(this, function (window) {
     'use strict';
 
@@ -59,6 +59,13 @@
     var rnotwhite = /\S+/g;
 
     var document = window.document;
+
+    function returnTrue() {
+        return true;
+    }
+    function returnFalse() {
+        return false;
+    }
 
     function makeMap(string, expectsLowerCase) {
         var map = {};
@@ -121,7 +128,7 @@
         for (i in object) {
             value = object[i];
             if (value && deep && value !== object) {
-                if (value.destroy && value.yep === version) {
+                if (value.destroy && value.v2version === version) {
                     value.destroy(deep);
                 } else if (value.jquery) {
                     if (check_destroy(elem, function (node) { return value.is(node); })) {
@@ -153,7 +160,12 @@
         rtag = new RegExp("^" + tag + "$", "i"),
         rnamespace = new RegExp("^(?:(" + tag + "(?:\\.(?:" + tag + "|\\*))*" + ")\\.)?(" + tag + ")$", "i"),
         rnamespaceGet = new RegExp("^(?:(" + tag + "(?:\\.(?:" + tag + "|\\*))*" + ")\\.)?(\\*|" + tag + ")$", "i");
-    function namespaceCached(objectCreate, objectCallback) {
+    function namespaceCached(readyCallback, objectCreate, objectCallback) {
+        if (arguments.length < 3) {
+            objectCallback = objectCreate;
+            objectCreate = readyCallback;
+            readyCallback = returnTrue;
+        }
         var cache = {},
             matchCache = makeCache(function (namespace) {
                 return new RegExp("^" + namespace.replace(/\./g, "\\.").replace(rany, "[^\\.]+") + "$", "i");
@@ -161,8 +173,8 @@
             namespaceCache = makeCache(function (string, namespace) {
                 return namespace === "*" ? string : namespace + "." + string;
             }),
-            fnGet = function (namespace, string) {
-                string = string || "*";
+            fnGet = function (namespace, tag) {
+                tag = tag || "*";
                 namespace = namespace || "*";
                 var data, cached = cache[namespace];
                 if (!cached) {
@@ -170,31 +182,31 @@
                         var rmatch = matchCache(namespace);
                         for (data in cache) {
                             if (rmatch.test(data)) {
-                                return fnGet(data, string);
+                                return fnGet(data, tag);
                             }
                         }
                     }
                     return false;
                 }
-                if (string === "*") {
-                    string = namespace.split(".").pop();
+                if (tag === "*") {
+                    tag = namespace.split(".").pop();
                 }
-                return cached[string];
+                return cached[tag];
             },
-            fnSet = function (namespace, string, option) {
-                option.tag = string;
-                namespace = namespaceCache(string, namespace || "*");
+            fnSet = function (namespace, tag, option) {
+                option.tag = tag;
+                namespace = namespaceCache(tag, namespace || "*");
                 var data, cached = cache[namespace] || (cache[namespace] = {});
-                if (!(data = cached[string]) || v2.isFunction(option)) {
-                    return cached[string] = option;
+                if (!(data = cached[tag]) || v2.isFunction(option)) {
+                    return cached[tag] = option;
                 }
                 if (v2.isFunction(data)) {
-                    throw new Error("The cache has been assigned as a function by an object named “" + string + "”.");
+                    throw new Error("The cache has been assigned as a function by an object named “" + tag + "”.");
                 }
-                return cached[string] = v2.extend(true, data, option);
+                return cached[tag] = v2.extend(true, data, option);
             };
         return function (string, option) {
-            var match, namespace;
+            var ready, match, namespace;
             string = v2.urlCase(string);
             if (option === undefined) {
                 var results = objectCreate(string);
@@ -208,7 +220,12 @@
                 return results;
             }
             if (match = rnamespace.exec(string)) {
-                return fnSet(match[1], match[2], option);
+                if (ready = arguments.length > 2 ?
+                    readyCallback.apply(null, [match[1], match[2], option].concat(core_slice.call(arguments, 2))) :
+                    readyCallback(match[1], match[2], option)) {
+                    return fnSet(match[1], match[2], ready === true ? option : ready);
+                }
+                return ready;
             }
             v2.error("string:" + string + ",Invalid class name space.");
         };
@@ -374,8 +391,9 @@
         rstandardTag = /^<([\w-]+)|<\/([\w-]+)>$/g,
         rinject = new RegExp("^" + whitespace + "*(" + word + ")\\(((" + whitespace + "*" + word + whitespace + "*,)*" + whitespace + "*" + word + ")?" + whitespace + "*\\)" + whitespace + "*$", "i");
 
-    var inlineTag = "a|abbr|acronym|b|bdo|big|br|cite|code|dfn|em|font|i|img|input|kbd|label|q|s|samp|select|small|span|strike|strong|sub|sup|textarea|tt|u|var";
-    var rinlineTag = new RegExp('^' + inlineTag + "$");
+    var
+        inlineTag = "a|abbr|acronym|b|bdo|big|br|cite|code|dfn|em|font|i|img|kbd|label|q|s|samp|small|span|strike|strong|sub|sup|tt|u|var",
+        rinlineTag = new RegExp('^(' + inlineTag + ")$");
 
     function dependencyInjection(context, key, inject, value) {
         if (!inject) return value;
@@ -415,7 +433,12 @@
         return new tagColection(tag);
     };
     function ArrayThen(arr) {
-        v2.merge(this, arr);
+        if (isArraylike(arr)) {
+            v2.merge(this, arr);
+        } else if (arr != null) {
+            this[0] = arr;
+            this.length = 1;
+        }
     }
     ArrayThen.prototype = {
         length: 0,
@@ -440,7 +463,7 @@
             return v2.each(this, callback);
         },
         eq: function (i) {
-            return new ArrayThen(i in this ? [this[i]] : []);
+            return new ArrayThen(this[i]);
         },
         done: function (callback) {
             return v2.each(this, callback), core_splice.call(this, 0, this.length);
@@ -467,7 +490,7 @@
             return v2(tag, component ? v2.improve(options, component) : options);
         },
         tag: "*",
-        yep: version,
+        v2version: version,
         identity: 0,
         limit: false,
         access: false,
@@ -597,24 +620,30 @@
         baseConfigs: function (option) {
             this.base = this.base || {};
             this.init = function (tag) {
-                var n, s, m, node, match, variable = this.variable, context, parsing = function (match, append) {
+                var n, s, m, node, match, variable = this.variable, context, parsing = function (match, drawing) {
                     if (s = match[2]) {
                         while (m = rattr.exec(s)) {
                             if (m[3] && m[1] === 'class') {
                                 variable.addClass = variable.addClass ? variable.addClass + ' ' + m[3] : m[3];
                             } else if (m[1] in this) {
-                                this[m[1]] = typeof this[m[1]] === 'boolean' ? true : m[3];
-                            } else if (!m[3] || !(n = v2.attr(node, m[1])) || !(n === m[3])) {
+                                this[m[1]] = m[1] === m[3] || rboolean.test(m[1]) || m[3];
+                            } else if (drawing && (!m[3] || !(n = v2.attr(node, m[1])) || !(n === m[3]))) {
                                 v2.attr(node, m[1], m[3]);
                             }
                             s = s.slice(m[0].length);
                         }
                     }
-                    if (append && (s = match[9]) && !v2.any(node.childNodes, function (n) {
-                        return n.nodeType === 1 || n.nodeType === 3 && core_trim.call(n.nodeValue);
-                    })) {
-                        v2.empty(node);
-                        v2.append(node, [s]);
+                    if (s = match[9]) {
+                        if ('html' in this || 'text' in this) {
+                            if (!drawing || this.html || this.text) return;
+                            if ('html' in this && 'text' in this) {
+                                this[rhtml.test(s) ? 'html' : 'text'] = s;
+                            } else {
+                                this['html' in this ? 'html' : 'text'] = s;
+                            }
+                        } else {
+                            v2.error('Invalid template. The current control does not support HTML or text properties.');
+                        }
                     }
                 };
                 if (this.template) {
@@ -650,9 +679,19 @@
                     return this.$$ = context, this.$ = this.$$.appendChild(node || document.createElement(tag));
                 }
                 if (!v2.nodeName(node, tag)) {
+                    if (node.childNodes.length === 1 && node.firstChild.nodeType === 3) {
+                        if ('text' in this) {
+                            this.text = this.text || node.innerHTML;
+                        }
+                    } else if (node.firstChild) {
+                        if ('html' in this) {
+                            this.html = this.html || node.innerHTML;
+                        }
+                    }
+                    v2.empty(node);
                     var html = node.outerHTML;
-                    v2.append(xhtmlNode, [html.replace(rstandardTag, function (_all, tag_pre, tag_next) {
-                        return _all.replace(tag_pre || tag_next, tag);
+                    v2.append(xhtmlNode, [html.replace(rstandardTag, function (all, pre, next) {
+                        return all.replace(pre || next, tag);
                     })]);
                     var next = node.nextSibling;
                     context.removeChild(node);
@@ -681,20 +720,21 @@
                 wildCards = this.wildCards || (this.wildCards = {}),
                 makeCallback = function (callback, key) {
                     if (callback.control === context) return callback;
-                    var _base, _value, _callback = function () {
-                        _base = context.base;
-                        context.base = _base.base;
-                        _value = context.enumState[key];
+                    var _callback = function () {
+                        var base = context.base;
+                        var value = context.enumState[key];
 
-                        _value = (!_value || _value <= 1 || _value >= 16) ?
+                        context.base = base.base;
+
+                        value = (!value || value <= 1 || value >= 16) ?
                             applyCallback(callback, arguments, context) :
-                            _value < 4 ? callback.call(context, variable) :
-                                _value < 8 ?
+                            value < 4 ? callback.call(context, variable) :
+                                value < 8 ?
                                     callback.call(context, context.data) :
                                     callback.call(context, variable, context.data);
 
-                        context.base = _base;
-                        return _value;
+                        context.base = base;
+                        return value;
                     };
                     _callback.control = context;
                     return _callback;
@@ -712,17 +752,13 @@
                     tag = option.tag;
                     if (isFunction = type === "function") {
                         namespace += "." + tag;
-                        option = option(context.option || {}, context);
-                    }
-                    tag = option.tag || tag;
-                    if (tag && (fn = option[v2.camelCase(tag)]) && v2.isFunction(fn)) {
+                        option.call(context, context.option || {});
+                    } else if (tag && (fn = option[v2.camelCase(tag)]) && v2.isFunction(fn)) {
                         fn.call(context, option);
                     }
-                    var _key, _value, _contains;
-                    v2.each(option, function (value, key) {
+                    var _value, _contains;
+                    v2.each(isFunction ? option.prototype : option, function (value, key) {
                         if (key === tag || value == null) return;
-
-                        _key = key;
 
                         _contains = true;
 
@@ -778,13 +814,12 @@
                                 variable[key] = value;
                                 break;
                         }
-                        if (isFunction) option[_key] = undefined;
                     });
-                    if (isFunction) option = undefined;
                 };
-            v2.each(v2.use(this.tag), function (option) {
-                initControls(option, true);
-            });
+
+            v2.each(v2.use(this.tag), function (then) {
+                initControls(then.then(this.option), true);
+            }, this);
 
             initControls(this.option);
 
@@ -869,9 +904,17 @@
             this.switchCase();
         },
         usb: function () {
-            var my = this,
-                visible = !!this.visible,
-                showClass = rinlineTag.test(this.$.nodeName) ? 'show-inline' : 'show';
+            var my = this, visible,
+                nodeName = this.$.nodeName.toLowerCase(),
+                display = nodeName === 'table' ?
+                    'table' :
+                    nodeName === 'tr' ?
+                        'table-row' :
+                        (nodeName === 'td' || nodeName === 'th') ?
+                            'table-cell' :
+                            rinlineTag.test(nodeName) ?
+                                'inline' :
+                                '';
             this.define('disabled', function (value) {
                 this.toggleClass('disabled', !!value);
             }).define('visible', {
@@ -879,19 +922,13 @@
                     return visible;
                 },
                 set: function (value) {
-                    if (visible === !value) {
+                    if (visible === undefined || visible === !value) {
                         if (visible = !!value) {
-                            if (my.hasClass('hide')) {
-                                my.removeClass('hide');
-                            } else {
-                                my.addClass(showClass);
-                            }
+                            if (my.show() !== false)
+                                my.css('display', display);
                         } else {
-                            if (my.hasClass(showClass)) {
-                                my.removeClass(showClass);
-                            } else {
-                                my.addClass('hide');
-                            }
+                            if (my.hide() !== false)
+                                my.css('display', 'none');
                         }
                     }
                 }
@@ -1244,11 +1281,7 @@
         info: 2,
         log: 1
     };
-    var use = namespaceCached(function () {
-        return new Array();
-    }, function (results, value) {
-        results.unshift(value);
-    });
+
     function mergeCards(card, card2) {
         var val, type, type_check, doubleAsterisk = card.type === '*' && card2.type === '*';
         return {
@@ -1286,9 +1319,67 @@
                 }
         };
     }
+
+
+    var
+        keywords = "break|case|catch|continue|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var" +
+            "|void|while|with|abstract|boolean|byte|char|class|const|debugger|double|enum|export|extends|final|float|goto|implements|import|int|interface|long" +
+            "|native|package|private|protected|public|short|static|super|synchronized|throws|transient|volatile|true|false",
+        rvariable = new RegExp("(['\"])(?:\\\\.|[^\\\\])*?\\1|((?!\\b(?:" + keywords + ")\\b)[\\w$]+)(\\.[\\w$]+)*", 'g'),
+        useThenCache = makeCache(function (tag) {
+            function UseThen() {
+                this.tag = tag;
+            }
+            UseThen.prototype = {
+                length: 0,
+                when: function (when, option) {
+                    if (v2.isString(when)) {
+                        var arr = [];
+                        when.replace(rvariable, function (_, _quotes, variable) {
+                            if (variable && arr.indexOf(variable) === -1) {
+                                arr.push(variable);
+                            }
+                        });
+                        if (!rreturn.test(when)) {
+                            when = 'return ' + when;
+                        }
+                        when = new Function('option', (arr.length && 'var ' + arr.join(',') + ';') + 'with(option){' + when + '}');
+                    }
+                    var length = this.length;
+                    if (option) option.tag = this.tag;
+                    this[length] = { when: when, option: option };
+                    this.length = length + 1;
+                },
+                then: function (option) {
+                    var i = 0, use;
+                    while (use = this[i++]) {
+                        if (use.when(option || (option = {}))) return use.option;
+                    }
+                }
+            };
+            return new UseThen();
+        });
+    var
+        useCache = {},
+        use = namespaceCached(function (_namespace, tag, option, when) {
+            var then = useThenCache(tag);
+            then.when(when || returnTrue, option);
+            if (tag in useCache) return false;
+            return then;
+        }, function () {
+            return new Array();
+        }, function (results, value) {
+            results.unshift(value);
+        });
     v2.extend({
-        use: function (tag, option) {
-            if (v2.isString(tag)) return use(tag, option);
+        use: function (tag, when, option) {
+            if (arguments.length < 3) {
+                option = when;
+                when = undefined;
+            }
+            if (v2.isString(tag)) {
+                return use(tag, option, when);
+            }
             var fn = tag instanceof v2 ? tag : v2.fn,
                 wildCards = fn.wildCards || (fn.wildCards = {});
             v2.each(option || tag, function (value, key) {
@@ -1347,7 +1438,6 @@
         },
         '&hide': function () {
             this.visible = false;
-            this.visible(false);
         },
         '?toggle': function (toggle) {
             if (typeof toggle === "boolean") {
@@ -1458,7 +1548,7 @@
         }
         if (selector.nodeType === 1) return selector;
         if (isArraylike(selector)) return selector[0];
-        if (selector.yep === version) return selector.$;
+        if (selector.v2version === version) return selector.$;
     };
     var
         classCache = v2.makeCache(function (string) {
@@ -2067,9 +2157,6 @@
         return compileCache(expr)(document, rsibling.test(expr), elem);
     };
 
-    function returnFalse() {
-        return false;
-    }
     function makeFn(selector, fn) {
         var r, callback;
         if (!selector || !v2.isString(selector)) return fn.propagation || (fn.propagation = function (e) {
@@ -2283,6 +2370,10 @@
                 fn = returnFalse;
             }
             if (!elem || !types || !fn) return;
+            if (selector && selector.nodeType) {
+                elem = selector;
+                selector = undefined;
+            }
             var i = 0, type;
             fn = makeFn(selector, fn);
             types = types.match(rnotwhite) || [];
@@ -2310,6 +2401,7 @@
             }
         },
         addClass: function (elem, value) {
+            if (!elem || !value) return;
             var i = 0, pattern, type = v2.type(value), clazz = elem.className;
             if (type === "function") {
                 return v2.addClass(elem, value.call(elem, clazz));
@@ -2326,6 +2418,7 @@
             }
         },
         removeClass: function (elem, value) {
+            if (!elem || !value) return;
             var i = 0, pattern, type = v2.type(value), clazz = elem.className;
             if (type === "function") {
                 return v2.removeClass(elem, value.call(elem, clazz));
@@ -2586,13 +2679,9 @@
             });
         },
         empty: function (elem) {
-            var node;
-            if (elem && (node = elem.firstChild)) {
-                do {
-                    elem.removeChild(node);
-                } while (node = node.nextSibling);
+            while (elem.firstChild) {
+                elem.removeChild(elem.firstChild);
             }
-            return elem;
         },
         text: function (elem) {
             var r = "",
@@ -2617,6 +2706,9 @@
     v2.each('append prepend before after empty'.split(' '), function (name) {
         v2.fn[name] = function () {
             return v2[name](this.$, arguments), this;
+        };
+        v2.fn[name + 'At'] = function () {
+            return v2[name](arguments[0], core_slice.call(arguments, 1)), this;
         };
     });
     function access(vm, fn, key, value, elem, chainable, raw) {
@@ -2660,11 +2752,11 @@
                 fn(elem, key);
     }
     var rclass = /[\t\r\n]/g,
-        rcssText = /^([+-/*]=)?([+-]?(?:[0-9]+\.)?[0-9]+)/i;
+        rcssText = /^([+-/*]=)?([+-]?(?:[0-9]+\.)?[0-9]+)(%|[a-z]*)/i;
+    function accessApply(context, fn, args) {
+        return fn.apply(context, [context.$].concat(core_slice.call(args, 0)));
+    }
     v2.use({
-        access: function (fn, args) {
-            return fn.apply(this, [this.$].concat(core_slice.call(args, 0)));
-        },
         hasClass: function (value) {
             return this.hasClassAt(this.$, value);
         },
@@ -2684,6 +2776,7 @@
             return v2.toggleClass(elem, value, toggle), this;
         },
         '.width': function (width) {
+            if (!arguments.length) return this.variable.width;
             var match = rcssText.exec(width);
             if (match) {
                 if (match[1]) {
@@ -2693,13 +2786,14 @@
                         return false;
                     }
                 } else {
-                    this.variable.width = +match[2];
+                    this.variable.width = (!match[3] || match[3].toLowerCase() === 'px') ? +match[2] : match[0];
                 }
                 v2.style(this.limitHorizontalElement || this.$, this.limit ? "max-width" : "width", this.variable.width);
                 return true;
             }
         },
         '.height': function (height) {
+            if (!arguments.length) return this.variable.height;
             var match = rcssText.exec(height);
             if (match) {
                 if (match[1]) {
@@ -2709,26 +2803,29 @@
                         return false;
                     }
                 } else {
-                    this.variable.height = +match[2];
+                    this.variable.height = (!match[3] || match[3].toLowerCase() === 'px') ? +match[2] : match[0];
                 }
                 v2.style(this.limitVerticalElement || this.$, this.limit ? "max-height" : "height", this.variable.height);
                 return true;
             }
         },
         empty: function () {
-            return v2.empty(this.$), this;
+            return this.emptyAt(this.$);
+        },
+        emptyAt: function (elem) {
+            return v2.empty(elem), this;
         },
         domManip: function (args, table, callback) {
             return v2.domManip(this.$, args, table, callback);
         },
         '{css': function () {
-            return this.access(this.cssAt, arguments);
+            return accessApply(this, this.cssAt, arguments);
         },
         '{attr': function () {
-            return this.access(this.attrAt, arguments);
+            return accessApply(this, this.attrAt, arguments);
         },
         '{prop': function () {
-            return this.access(this.propAt, arguments);
+            return accessApply(this, this.propAt, arguments);
         },
         cssAt: function (elem, name, value) {
             return access(this, function (elem, name, value) {
@@ -2780,12 +2877,15 @@
 
     v2.each("on off".split(' '), function (name) {
         v2.fn[name] = function () {
-            return this.access(this[name + 'At'], arguments);
+            return accessApply(this, this[name + 'At'], arguments);
         };
         v2.fn[name + 'At'] = function (elem, type, selector, fn) {
             if (arguments.length < 4) {
                 fn = selector;
                 selector = undefined;
+            }
+            if (selector && selector.v2version) {
+                selector = selector.$;
             }
             if (v2.isPlainObject(type)) {
                 return v2.each(type, function (callback, type) {
@@ -2840,6 +2940,7 @@
         rgroup = new RegExp("^" + whitespace + "*\\("),
         rcombinators2 = new RegExp("^" + whitespace + "*([>+])" + whitespace + "*"),
         rsingleTag = /area|br|col|embed|hr|img|input|link|meta|param/i,
+        rboolean = /^(?:checked|selected|autofocus|autoplay|async|controls|defer|disabled|hidden|loop|multiple|open|readonly|required|scoped)$/i,
         fhtmlSerializeCache = function (selector) {
             var i, charAt, counter, token, type, match, matched, groups = [], string = selector, serialize = htmlSerialize.serialize;
             while (string) {
@@ -2965,7 +3066,7 @@
         this.value = value;
     }
     Attr.prototype.toString = function () {
-        return this.name + '="' + this.value + '"';
+        return this.value ? this.name + '="' + this.value + '"' : this.name;
     };
     v2.extend(htmlSerialize, {
         serialize: {
@@ -2976,10 +3077,10 @@
                 if (match[3]) {
                     match[2] = match[3];
                 }
-                if (match[2] === undefined) {
+                if (match[2] === undefined && rboolean.test(match[0])) {
                     match[2] = match[0];
                 }
-                return new Attr(match[0].replace(runescape, funescape), match[2].replace(runescape, funescape));
+                return new Attr(match[0].replace(runescape, funescape), match[2] && match[2].replace(runescape, funescape));
             }
         },
         deserialize: {

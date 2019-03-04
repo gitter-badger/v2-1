@@ -1,4 +1,11 @@
-﻿.date-picker-icon {
+﻿.date-picker * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.date-picker-icon {
     border: 1px solid #B1D2EC;
 }
 
@@ -36,17 +43,17 @@
         color: #1F547E;
     }
 
-    .date-picker-box .date-picker-void {
-        color: #BDD8EE !important;
+.date-picker .date-void {
+    color: #BDD8EE !important;
+}
+
+    .date-picker .date-void:hover {
+        background-color: #fff !important
     }
 
-        .date-picker-box .date-picker-void:hover {
-            background-color: #fff !important
-        }
-
-    .date-picker-box a, .date-picker-box a:hover {
-        color: #1F547E;
-    }
+.date-picker-box a, .date-picker-box a:hover {
+    color: #1F547E;
+}
 
 .date-picker .active {
     background-color: #DEECF8 !important;
@@ -106,7 +113,7 @@
     color: #1F547E;
 }
 
-.date-picker-container .besides {
+.date-picker-container .non-month {
     color: #60A2D7;
 }
 
@@ -135,7 +142,7 @@
     background-color: #fff;
 }
 
-.date-picker-footer .laydte-hsmtex {
+.date-picker-footer .date-hsmtex {
     border-bottom: 1px solid #B1D2EC;
 }
 
@@ -162,6 +169,6 @@
 .date-picker-y .date-picker-yms a:hover,
 .date-picker-container td:hover,
 .date-picker-footer .date-picker-hms-c span:hover,
-.date-picker-footer .laydte-hsmtex {
+.date-picker-footer .date-hsmtex {
     background-color: #ECF4FB
 }

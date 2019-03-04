@@ -24,6 +24,7 @@
                     .done(function (elem) {
                         v2.addClass(elem, 'active');
                     });
+                this.hide();
             }, true).define('selectedValue', {
                 get: function () {
                     return this.data ? this.data[this.selectedIndex] : null;
@@ -50,18 +51,31 @@
                 '}}`'];
             this.append(htmls.join('').forCb(this.data = data));
         },
+        show: function () {
+            this.base.show();
+            this.$master.addClass('open');
+            return false;
+        },
+        hide: function () {
+            this.base.hide();
+            this.$master.removeClass('open');
+            return false;
+        },
         commit: function () {
             var my = this;
             this.base.commit();
             this.on('click', '[data-index]:not(.disabled)', function () {
                 my.selectedIndex = +v2.attr(this, 'data-index');
             });
-            this.$master.on('click', function () {
-                my.$touch.toggleClass('open');
-                return false;
+            this.$master.on('click', this.$touch, function () {
+                my.toggle();
             });
-            v2.on(document, 'click', function () {
-                my.$touch.removeClass('open');
+            var touch = this.$touch ? this.$touch.$ || this.$touch : this.$master.$,
+                isString = v2.isString(touch);
+            v2.on(document, 'click', function (e) {
+                var elem = e.target || e.srcElement;
+                if (isString ? v2.matches(elem, touch) || v2.take(touch, elem) : elem === touch || v2.contains(touch, elem)) return;
+                my.hide();
             });
         }
     });

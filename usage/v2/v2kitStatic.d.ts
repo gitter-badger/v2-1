@@ -422,91 +422,105 @@ interface V2kitStatic {
      * 判断对象是不是数组。
      * @param object 需要判断的对象。
      */
-    isArray(object: any): object is Array<any>;
+    isArray(object: any): object is Array<any>,
     /**
      * 判断对象是不是常规对象。
      * @param object 需要判断的对象。
      */
-    isPlainObject(object: any): boolean;
+    isPlainObject(object: any): boolean,
     /** 通配符，当对象的 key 第一个字符与 通配符的第一个字符相同，并且该 key 的值类型满足通配符的 type 值时，控件运行的时候会执行通配符的 exec 方法。*/
-    wildCards: Yep.WildCards;
+    wildCards: Yep.WildCards,
     /**
      * 控件准备。
      * @param tag 控件的tag名称。
      * @param callback 回调函数。
      * @returns 返回控件实例化对象。
      */
-    ready(tag: string, callback: (tag: string) => any): Yep.V2Control;
+    ready(tag: string, callback: (tag: string) => any): Yep.V2Control,
     /**
      * 控件准备。
      * @param tag 控件的tag名称。
      * @param callback 回调函数。
      * @returns 返回控件实例化对象。
      */
-    ready(tag: string, callback: (tag: string, option: Yep.PlainObject) => any): Yep.V2Control;
+    ready(tag: string, callback: (tag: string, option: Yep.PlainObject) => any): Yep.V2Control,
     /**
      * 将字符串按照空格分割，作为 A。
      * @param string 字符串。
      * @returns 返回方法。当调用方法的字符串包含在“A”中时，返回 true。
      */
-    makeMap(string: string): (string: string) => boolean;
+    makeMap(string: string): (string: string) => boolean,
     /**
      * 将字符串按照空格分割，作为 A（当“expectsLowerCase”为true的时候把内容转为小写）。
      * @param string 字符串。
      * @param expectsLowerCase 指定字符串去不区分大小写。
      * @returns 返回方法。当调用方法的字符串(当“expectsLowerCase”为true的时候，将字符串转为小写)包含在“A”中时，返回 true。
      */
-    makeMap(string: string, expectsLowerCase: boolean): (string: string) => boolean;
+    makeMap(string: string, expectsLowerCase: boolean): (string: string) => boolean,
     /**
      * 生成缓存。
      * @param callback 回调函数。
      * @returns 当字符串没有缓存的时候，调用回调函数并将结果存为该字符串的缓存，否则直接返回字符串的缓存。
      */
-    makeCache<T>(callback: (this: Yep.PlainObject<T>, string: string) => T): (string: string) => T;
+    makeCache<T>(callback: (this: Yep.PlainObject<T>, string: string) => T): (string: string) => T,
     /**
      * 生成缓存。
      * @param callback 回调函数。
      * @param objectN 返回的函数参数。
      * @returns 当字符串没有缓存的时候，调用回调函数并将结果存为该字符串的缓存，否则直接返回字符串的缓存。
      */
-    makeCache<T>(callback: (this: Yep.PlainObject<T>, string: string, ...objectN: any[]) => T): (string: string, ...objectN: any[]) => T;
+    makeCache<T>(callback: (this: Yep.PlainObject<T>, string: string, ...objectN: any[]) => T): (string: string, ...objectN: any[]) => T,
     /**
      * 以命名空间的形式缓存(将option存到命名空间中)。
      * @param objectCreate 返回值构造器。
      * @param objectCallback 返回值新增属性函数。
      * @returns 设置命名空间数据或返回字符串命名空间的所有数据。
      */
-    makeNamespaceCache<T>(objectCreate: (string: string) => ArrayLike<T>, objectCallback: (array: ArrayLike<T>, option: T, string: string) => any): (namespace: string, option?: T) => T;
+    makeNamespaceCache<T>(objectCreate: (string: string) => ArrayLike<T>, objectCallback: (array: ArrayLike<T>, option: T, string: string) => any): (namespace: string, option?: T) => T,
     /**
      * 以命名空间的形式缓存。
      * @param objectCreate 返回值构造器。
      * @param objectCallback 返回值新增属性函数。
      * @returns 设置命名空间数据或返回字符串命名空间的所有数据。
      */
-    makeNamespaceCache<T>(objectCreate: (string: string) => Yep.PlainObject<T>, objectCallback: (object: Yep.PlainObject<T>, option: T, string: string) => any): (namespace: string, option?: T) => T;
+    makeNamespaceCache<T>(objectCreate: (string: string) => Yep.PlainObject<T>, objectCallback: (object: Yep.PlainObject<T>, option: T, string: string) => any): (namespace: string, option?: T) => T,
     /**
      * 判断当前对象的nodeName是否与tag相同（当tag为空或者为“*”时，对象满足Node对象就返回true），不区分大小写。
      * @param node node对象。
      * @param tag nodeName名称。
      */
-    nodeName(node: Node, tag: string): boolean;
+    nodeName(node: Node, tag: string): boolean,
     /**
      * 获取已设置tag控件的所有配置内容。
      * @param tag tag名称。
      * @returns 返回tag控件的所有配置内容。
      */
-    use(tag: string): Array<Yep.PlainObject>;
+    use(tag: string): Array<Yep.UseThen>,
     /**
      * 设置控件的全局属性或方法。
      * @param option 需要设置的对象。
      */
-    use(option: Yep.V2ControlExtensions): any;
+    use(option: Yep.V2ControlExtensions): Yep.UseThen,
     /**
      * 设置tag控件的配置。
      * @param tag tag名称。
      * @param option 需要设置的对象。
      */
-    use(tag: string, option: Yep.V2ControlExtensions): any;
+    use(tag: string, option: Yep.V2ControlExtensions): Yep.UseThen,
+    /**
+     * 设置tag控件配置。
+     * @param tag tag名称
+     * @param when 生效条件(条件将被转为Function，字符串中只需进行属性判断，如：需要type属性值为“checkbox”或“radio”使用option配置项时，写为：type==="checkbox"||type==="radio"。)
+     * @param option 配置信息
+     */
+    use(tag: string, when: string, option: Yep.V2ControlExtensions): Yep.UseThen,
+    /**
+     * 设置tag控件配置。
+     * @param tag tag名称
+     * @param when 生效条件。
+     * @param option 配置信息
+     */
+    use(tag: string, when: (option: Yep.PlainObject) => boolean, option: Yep.V2ControlExtensions): Yep.UseThen,
     /**
      * 自定义通配符
      * @param wildCards

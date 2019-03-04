@@ -42,8 +42,8 @@
     .checkbox::before {
         position: absolute;
         z-index: 10;
-        top: 0;
-        bottom: 0;
+        top: -2px;
+        bottom: -2px;
         left: .25em;
         margin: auto;
         content: '';
