@@ -231,22 +231,15 @@
             v2.error("string:" + string + ",Invalid class name space.");
         };
     };
-    var deleteSurport = true;
     v2.deleteCb = function (obj, value) {
         if (!obj || !value) return;
         var i = 0, name;
         value = value.match(rnotwhite);
         while (name = value[i++]) {
             if (!(name in obj)) return;
-            if (!deleteSurport) {
-                return obj[name] = undefined;
-            }
             try {
                 delete obj[name];
-            } catch (_) {
-                obj[name] = undefined;
-                deleteSurport = false;
-            }
+            } catch (_) { }
         }
     };
     function defineFix(obj, name, attributes) {
