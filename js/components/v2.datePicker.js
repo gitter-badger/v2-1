@@ -25,7 +25,7 @@
     v2.use("date-picker", {
         datePicker: function () {
             /** 涉及到的控件 */
-            this.$touch = null;
+            this.touch = null;
 
             /** 最小值 */
             this.minDf = "1900-01-01 00:00:00";
@@ -298,10 +298,10 @@
         usb: function () {
             this.base.usb();
             var value, valueCall = function () {
-                if ('value' in this.$touch) {
-                    return this.$touch.value;
+                if ('value' in this.touch) {
+                    return this.touch.value;
                 }
-                var elem = this.$touch.$ || this.$touch;
+                var elem = this.touch.$ || this.touch;
                 return rinputTag.test(elem.tagName) ? elem.value : elem.innerHTML;
             };
             this.define('value', {
@@ -333,10 +333,10 @@
                                 return ymd.index = 0 | ++ymd.index, zoreFill(ymd[ymd.index]);
                             });
                     }
-                    if ('value' in this.$touch) {
-                        return this.$touch.value = value;
+                    if ('value' in this.touch) {
+                        return this.touch.value = value;
                     }
-                    var elem = this.$touch.$ || this.$touch;
+                    var elem = this.touch.$ || this.touch;
                     return rinputTag.test(elem.tagName) ? elem.value = value : elem.innerHTML = value;
                 }
             }).define({
@@ -394,7 +394,7 @@
         resolve: function () {
             this.dayRender();
             if (!this.dialog) return;
-            var elem = this.$touch.$ || this.$touch;
+            var elem = this.touch.$ || this.touch;
             var xy = elem.getBoundingClientRect(),
                 l = xy.left + (this.fixed ? 0 : this.scroll(1)),
                 t = xy.bottom + elem.offsetHeight / 1.5 <= this.area() ?
@@ -487,10 +487,10 @@
                     valueSet(my.ymd[0], my.ymd[1], my.ymd[2], my.hms[0], my.hms[1], my.hms[2]);
                 }
             });
-            this.master.on('click', this.$touch, function () {
+            this.master.on('click', this.touch, function () {
                 my.show();
             });
-            var touch = this.$touch ? this.$touch.$ || this.$touch : this.master.$,
+            var touch = this.touch ? this.touch.$ || this.touch : this.master.$,
                 isString = v2.isString(touch);
             v2.on(document, 'click', function (e) {
                 var elem = e.target || e.srcElement;

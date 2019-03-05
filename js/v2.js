@@ -116,6 +116,7 @@
     function checkDestroy(elem, callback) {
         if (!elem) return false;
         if (callback(elem)) return true;
+        if (!elem.parentNode) return true;
         return v2.any(elem.parentNode.childNodes, function (node) {
             return callback(node);
         });
@@ -125,11 +126,13 @@
         if (!object) return null;
 
         var i, elem, value;
+        if (object.v2version === version) {
+            elem = object.$;
+        }
         for (i in object) {
             value = object[i];
             if (value && deep && value !== object) {
                 if (value.destroy && value.v2version === version) {
-                    if (i === 'master') continue;
                     value.destroy(deep);
                 } else if (value.jquery) {
                     if (checkDestroy(elem, function (node) { return value.is(node); })) {
@@ -137,7 +140,9 @@
                     }
                 } else if (value.nodeType) {
                     if (checkDestroy(elem, function (node) { return value === node; })) {
-                        value.parentNode.removeChild(value);
+                        if (value.parentNode) {
+                            value.parentNode.removeChild(value);
+                        }
                     }
                 } else if (v2.isPlainObject(value)) {
                     destroyObject(value, deep);
@@ -145,7 +150,7 @@
             }
             v2.deleteCb(object, i);
         }
-        return object = value = null;
+        return object = value = elem = null;
     }
 
     function v2(tag, option) {
@@ -172,7 +177,7 @@
                 return new RegExp("^" + namespace.replace(/\./g, "\\.").replace(rany, "[^\\.]+") + "$", "i");
             }, true),
             namespaceCache = makeCache(function (string, namespace) {
-                return namespace === "*" ? string : namespace + "." + string;
+                return (!namespace || namespace === "*") ? string : namespace + "." + string;
             }),
             fnGet = function (namespace, tag) {
                 tag = tag || "*";
@@ -387,6 +392,7 @@
         rinject = new RegExp("^" + whitespace + "*(" + word + ")\\(((" + whitespace + "*" + word + whitespace + "*,)*" + whitespace + "*" + word + ")?" + whitespace + "*\\)" + whitespace + "*$", "i");
 
     var
+        rcssText = /^([+-/*]=)?([+-]?(?:[0-9]+\.)?[0-9]+)(%|[a-z]*)/i,
         inlineTag = "a|abbr|acronym|b|bdo|big|br|cite|code|dfn|em|font|i|img|kbd|label|q|s|samp|small|span|strike|strong|sub|sup|tt|u|var",
         rinlineTag = new RegExp('^(' + inlineTag + ")$");
 
@@ -420,24 +426,6 @@
         return callback.apply(context, sliced ? args : core_slice.call(args));
     }
 
-    function HTMLColection(tag) {
-        var tagColection = (new Function('return function ' + tag.charAt(0).toUpperCase() + tag.slice(1) + 'Colection(tag){ this.tag = tag; }'))();
-        tagColection.prototype = {
-            constructor: tagColection,
-            length: 0,
-            add: function (control) {
-                this[this.length] = control;
-                this.length += 1;
-            },
-            remove: function (control) {
-                if (!control) return;
-                var index = core_indexOf.call(this, control);
-                if (index === -1) return;
-                core_splice.call(this, i, 1);
-            }
-        };
-        return new tagColection(tag);
-    };
     function ArrayThen(arr) {
         if (isArraylike(arr)) {
             v2.merge(this, arr);
@@ -550,7 +538,7 @@
                 if (!control) return;
                 var index = core_indexOf.call(this, control);
                 if (index === -1) return;
-                core_splice.call(this, i, 1);
+                core_splice.call(this, index, 1);
             }
         };
         return v2[tag + 's'] = new tagColection(tag);
@@ -912,43 +900,41 @@
 
             initControls(this.option);
 
-            var base, value, core_base = context.base;
+            var core_base = context.base;
             v2.each(defaults, function (fn, key) {
                 defaults[key] = undefined;
                 context[key] = function () {
-                    base = context.base;
+                    var base = context.base;
                     context.base = core_base;
-                    value = applyCallback(fn, arguments, context);
+                    var value = applyCallback(fn, arguments, context);
                     context.base = base;
                     return value;
                 };
             });
 
+            this.variable = variable;
+
             v2.define(this, "tag", true);
 
             v2.defineReadonly(this, "namespace", namespace);
 
-            v2.defineReadonly(this, 'variable', variable);
             v2.defineReadonly(this, "identity", ++identity);
 
             renderWildCard(this, function (type) {
                 return type !== 'function';
             }, variable);
-
-            initControls = (extendsCallback = (makeCallback = undefined));
         },
         init: function (tag, option) {
-            var type, render;
+            var type, render, controls;
+
             this.tag = tag;
             this.option = option;
             this.baseConfigs(option);
 
-            var controls = new V2Collection();
-
             v2.define(this, {
                 controls: {
                     get: function () {
-                        return controls;
+                        return controls || (controls = new V2Collection());
                     }
                 },
                 firstChild: {
@@ -1039,6 +1025,43 @@
                                 '';
             this.define('disabled', function (value) {
                 this.toggleClass('disabled', !!value);
+            }).define({
+                width: {
+                    get: this.getWidth,
+                    set: function (value) {
+                        var match = rcssText.exec(value);
+                        if (match) {
+                            if (match[1]) {
+                                try {
+                                    value = (new Function("v", "return v" + match[1] + match[2]))(this.width >> 0);
+                                } catch (_) {
+                                    console.log(_);
+                                }
+                            } else {
+                                value = (!match[3] || match[3].toLowerCase() === 'px') ? +match[2] : match[0];
+                            }
+                            return this.setWidth(value);
+                        }
+                    }
+                },
+                height: {
+                    get: this.getHeight,
+                    set: function (value) {
+                        var match = rcssText.exec(value);
+                        if (match) {
+                            if (match[1]) {
+                                try {
+                                    value = (new Function("v", "return v" + match[1] + match[2]))(this.height >> 0);
+                                } catch (_) {
+                                    console.log(_);
+                                }
+                            } else {
+                                value = (!match[3] || match[3].toLowerCase() === 'px') ? +match[2] : match[0];
+                            }
+                            return this.setHeight(value);
+                        }
+                    }
+                }
             }).define('visible', {
                 get: function () {
                     return visible;
@@ -1115,11 +1138,14 @@
                 }
             }, this);
 
-            this.master.controls.destroy(this);
+            if (this.master) {
+                this.master.controls.destroy(this);
+            }
             this.controls.destroy();
 
+            this.master = null;
             destroyObject(this.base, true);//基础对象始终深度释放。
-            destroyObject(this, deep);
+            destroyObject(this, deep || deep === undefined);
         }
     };
 
@@ -1202,6 +1228,9 @@
             results.length = i;
 
             return results;
+        },
+        indexOf: function (arr, item, from) {
+            return core_indexOf.call(arr, item, from);
         },
         each: function (object, callback, context) {
             if (!object || !callback) return object;
@@ -1448,11 +1477,11 @@
             "|void|while|with|abstract|boolean|byte|char|class|const|debugger|double|enum|export|extends|final|float|goto|implements|import|int|interface|long" +
             "|native|package|private|protected|public|short|static|super|synchronized|throws|transient|volatile|true|false",
         rvariable = new RegExp("(['\"])(?:\\\\.|[^\\\\])*?\\1|((?!\\b(?:" + keywords + ")\\b)[\\w$]+)(\\.[\\w$]+)*", 'g'),
-        useThenCache = makeCache(function (tag) {
+        useThenCache = makeCache(function (_, tag) {
             return new UseThen(tag);
         });
-    var use = namespaceCached(function (_namespace, tag, option, when) {
-        var then = useThenCache(tag);
+    var use = namespaceCached(function (namespace, tag, option, when) {
+        var then = useThenCache(namespace + '.' + tag, tag);
         then.when(when || returnTrue, option);
         if (then.length > 1) return false;
         return then;
@@ -2841,8 +2870,7 @@
                 fn(elem) :
                 fn(elem, key);
     }
-    var rclass = /[\t\r\n]/g,
-        rcssText = /^([+-/*]=)?([+-]?(?:[0-9]+\.)?[0-9]+)(%|[a-z]*)/i;
+    var rclass = /[\t\r\n]/g;
     function accessApply(context, fn, args) {
         return fn.apply(context, [context.$].concat(core_slice.call(args, 0)));
     }
@@ -2865,39 +2893,17 @@
         toggleClassAt: function (elem, value, toggle) {
             return v2.toggleClass(elem, value, toggle), this;
         },
-        '.width': function (width) {
-            if (!arguments.length) return this.variable.width;
-            var match = rcssText.exec(width);
-            if (match) {
-                if (match[1]) {
-                    try {
-                        this.variable.width = (new Function("v", "return v" + match[1] + match[2]))(this.variable.width || v2.css(this.limitVerticalElement || this.$, "width") >> 0);
-                    } catch (_) {
-                        return false;
-                    }
-                } else {
-                    this.variable.width = (!match[3] || match[3].toLowerCase() === 'px') ? +match[2] : match[0];
-                }
-                v2.style(this.limitHorizontalElement || this.$, this.limit ? "max-width" : "width", this.variable.width);
-                return true;
-            }
+        getWidth: function () {
+            return v2.css(this.limitHorizontalElement || this.$, this.limit ? "max-width" : "width", "");
         },
-        '.height': function (height) {
-            if (!arguments.length) return this.variable.height;
-            var match = rcssText.exec(height);
-            if (match) {
-                if (match[1]) {
-                    try {
-                        this.variable.height = (new Function("v", "return v" + match[1] + match[2]))(this.variable.height || v2.css(this.limitVerticalElement || this.$, "height") >> 0);
-                    } catch (_) {
-                        return false;
-                    }
-                } else {
-                    this.variable.height = (!match[3] || match[3].toLowerCase() === 'px') ? +match[2] : match[0];
-                }
-                v2.style(this.limitVerticalElement || this.$, this.limit ? "max-height" : "height", this.variable.height);
-                return true;
-            }
+        setWidth: function (width) {
+            v2.style(this.limitHorizontalElement || this.$, this.limit ? "max-width" : "width", width);
+        },
+        getHeight: function () {
+            return v2.css(this.limitHorizontalElement || this.$, this.limit ? "max-height" : "height", "");
+        },
+        setHeight: function (height) {
+            v2.style(this.limitVerticalElement || this.$, this.limit ? "max-height" : "height", height);
         },
         empty: function () {
             return this.emptyAt(this.$);
@@ -2979,7 +2985,7 @@
             }
             if (v2.isPlainObject(type)) {
                 return v2.each(type, function (callback, type) {
-                    this[name](type, selector, callback);
+                    this[name + 'At'](elem, type, selector, callback);
                 }, this), this;
             }
             if (v2.isString(fn)) {
@@ -3265,4 +3271,242 @@
         define("v2", [], function () { return v2; });
     }
     window.v2kit = window.v2 = v2;
+});
+
+(function (global, factory) {
+    return typeof exports === 'object' && typeof module === "object" ?
+        module.exports = global.document ?
+            factory(global) :
+            function (window) {
+                if (window.document == null) throw new Error("v2 requires a window with a document");
+                return factory(window);
+            } :
+        factory(global);
+})(this, function (window) {
+    v2.use('modal', {
+        modal: function () {
+            /** 动画 为 主 元素添加 .fade 类。 */
+            this.animate = true;
+            /** 显示遮罩层 */
+            this.backdrop = true;
+        },
+        render: function () {
+            this.base.render();
+            this.addClass('modal');
+            if (this.backdrop) {
+                this.$backdrop = this.after('.modal-backdrop'.htmlCoding()).next();
+            }
+            if (this.animate) {
+                this.addClass('fade');
+                if (this.backdrop) {
+                    this.addClassAt(this.$backdrop, 'fade');
+                }
+            }
+            this.$dialog = this.append('.modal-dialog'.htmlCoding()).last();
+        },
+        show: function () {
+            this.base.show();
+            this.addClass('in')
+                .addClassAt(this.$$, 'modal-open');
+            if (this.backdrop) {
+                this.addClassAt(this.$backdrop, 'in');
+            }
+            return false;
+        },
+        hide: function () {
+            this.base.hide();
+            this.removeClass('in')
+                .removeClassAt(this.$$, 'modal-open');
+            if (this.backdrop) {
+                this.removeClassAt(this.$backdrop, 'in');
+            }
+            return false;
+        },
+        close: function () {
+            this.hide();
+            this.destroy();
+        }
+    });
+    v2.use('modal.wait', {
+        wait: function () {
+            /** 超小加载框 */
+            this.xs = false;
+            /** 小加载框 */
+            this.sm = false;
+            /** 大加载框 */
+            this.lg = false;
+        },
+        render: function () {
+            this.base.render();
+            this.addClass('modal-wait');
+            if (this.backdrop) {
+                this.addClassAt(this.$backdrop, 'modal-wait');
+            }
+            if (this.xs || this.sm || this.lg) {
+                this.addClass(this.lg ? 'modal-wait-lg' : this.sm ? 'modal-wait-sm' : 'modal-wait-xs');
+            }
+        }
+    });
+    v2.use('modal.dialog', {
+        components: {
+            button: function () {
+                return require('components/v2.button');
+            },
+            buttonGroup: function () {
+                return require('components/v2.buttonGroup');
+            }
+        },
+        dialog: function () {
+            this.title = '温馨提示';
+            /** 显示标题栏 */
+            this.header = true;
+            /** 显示页脚 */
+            this.footer = true;
+            /** 按钮 */
+            this.buttons = [];
+        },
+        render: function () {
+            this.base.render();
+            this.appendAt(this.$dialog, '.modal-content>(.modal-header>button.close[aria-hidden]{×}+h4.modal-title)+.modal-body+.modal-footer'.htmlCoding());
+            this.$content = this.take('.modal-content', this.$dialog);
+            this.$header = this.take('.modal-header', this.$content);
+            this.$title = this.take('.modal-title', this.$header);
+            this.$body = this.take('.modal-body', this.$content);
+            this.$footer = this.take('.modal-footer', this.$content);
+        },
+        usb: function () {
+            this.base.usb();
+            this.define({
+                title: function (value) {
+                    this.emptyAt(this.$title)
+                        .appendAt(this.$title, value);
+                },
+                header: function (value) {
+                    v2.toggleClass(this.$header, 'hidden', !value);
+                },
+                footer: function (value) {
+                    v2.toggleClass(this.$footer, 'hidden', !value);
+                }
+            }, true);
+        },
+        bodyBuild: function (data) {
+            var type = v2.type(data);
+            this.emptyAt(this.$body);
+            switch (type) {
+                case 'string':
+                    this.appendAt(this.$body, data);
+                    break;
+                case 'array':
+                    v2.each(data, function (option) {
+                        this.bodyBuild(option);
+                    }, this);
+                case 'object':
+                    if (data.nodeType) {
+                        this.appendAt(this.$body, data);
+                        break;
+                    }
+                    data.$$ = this.$body;
+                    this.constructor(data.tag, data);
+                    break;
+                default:
+                    v2.error('Not support:The dialog component does not support this type(' + type + ').');
+            }
+        },
+        resolve: function (data) {
+            this.bodyBuild(data);
+            v2.each(this.buttons, function (option) {
+                option.$$ = this.$footer;
+                this.constructor(option.tag || 'button', option);
+            }, this);
+        },
+        commit: function () {
+            this.base.commit();
+            this.on('$click', '[aria-hidden]', function () {
+                this.hide();
+            }).onAt(document, '$keyup', function (e) {
+                var code = e.keyCode || e.which;
+                if (code === 27 || code === 96) {
+                    this.hide();
+                }
+            });
+        }
+    });
+    v2.use('modal.dialog.alert', {
+        alert: function () {
+            /** 不显示遮罩层 */
+            this.backdrop = false;
+        },
+        render: function () {
+            this.base.render();
+            var my = this;
+            this.buttons = [{
+                text: "确定",
+                type: "submit",
+                events: {
+                    click: function () {
+                        if (my.invoke('ok-event') !== false) {
+                            my.close();
+                        }
+                    }
+                }
+            }];
+        }
+    });
+    v2.use('modal.dialog.confirm', {
+        confirm: function () {
+            /** 不显示遮罩层 */
+            this.backdrop = false;
+        },
+        render: function () {
+            this.base.render();
+            var my = this;
+            this.buttons = [{
+                text: "确定",
+                type: "submit",
+                events: {
+                    click: function () {
+                        if (my.invoke('ok-event') !== false) {
+                            my.close();
+                        }
+                    }
+                }
+            }, {
+                text: "取消",
+                type: "button",
+                events: {
+                    click: function () {
+                        if (my.invoke('cancel-event') !== false) {
+                            my.close();
+                        }
+                    }
+                }
+            }];
+        }
+    });
+
+    window.alert = function (msg, title, okFn) {
+        if (v2.isFunction(title)) {
+            okFn = title;
+            title = null;
+        }
+        return v2('alert', {
+            title: title || "温馨提示",
+            data: msg,
+            okEvent: okFn
+        });
+    };
+
+    window.confirm = function (msg, title, okFn, cancelFn) {
+        if (v2.isFunction(title)) {
+            cancelFn = okFn;
+            okFn = title;
+            title = null;
+        }
+        return v2('confirm', {
+            title: title || "温馨提示",
+            data: msg,
+            okEvent: okFn,
+            cancelEvent: cancelFn
+        });
+    }
 });

@@ -121,6 +121,37 @@
         return new ValidityStateError();
     }
 
+    function RadioGroup(name) {
+        this.name = name;
+    }
+    RadioGroup.prototype = {
+        length: 0,
+        add: function (control) {
+            this[this.length] = control;
+            this.length += 1;
+            var my = this;
+            control.on('click', function () {
+                my.checked(control);
+            });
+        },
+        checked: function (control) {
+            var i = 0, node;
+            while (node = this[i++]) {
+                if (node === control) continue;
+                node.checked = false;
+            }
+        },
+        remove: function (control) {
+            var index = v2.indexOf(this, control);
+            if (index === -1) return false;
+            return Array.prototype.splice.call(this, index, 1);
+        }
+    };
+
+    var radioCache = v2.makeCache(function (name) {
+        return new RadioGroup(name);
+    });
+
     v2.use('input', {
         components: {
             datePicker: function () {
@@ -154,11 +185,11 @@
             this.type = "text";//[text|number|tel|email|url|search|date|datetime|time]
             /** 按钮名称 */
             this.value = "";
-            /** 超小按钮 */
+            /** 超小输入框 */
             this.xs = false;
-            /** 小按钮 */
+            /** 小输入框 */
             this.sm = false;
-            /** 大按钮 */
+            /** 大输入框 */
             this.lg = false;
             /** 默认提示 */
             this.placeholder = '';
@@ -194,8 +225,18 @@
                 case 'reset':
                 case 'submit':
                     this.addClass('btn');
-                    if (!variable.addClass) {
-                        this.addClass(this.type === 'submit' ? 'btn-primary' : this.type === 'reset' ? 'btn-warning' : 'btn-default');
+                    switch (this.type) {
+                        case 'submit':
+                            this.addClass('btn-primary');
+                            break;
+                        case 'reset':
+                            this.addClass('btn-warning');
+                            break;
+                        default:
+                            if (!variable.addClass) {
+                                this.addClass('btn-default');
+                            }
+                            break;
                     }
                     if (this.lg || this.sm || this.xs) {
                         this.addClass(this.lg ? 'btn-lg' : this.sm ? 'btn-sm' : 'btn-xs');
@@ -253,16 +294,23 @@
                         this.invoke('checked-change', defaultChecked = checked);
                     }
                 }).define('text', function (text) {
-                    v2.empty(this.$massage);
-                    this.$massage.appendChild(document.createTextNode(text));
+                    this.emptyAt(this.$massage)
+                        .appendAt(this.$massage, document.createTextNode(text));
                 }, true);
             }
+        },
+        destroy: function () {
+            if (this.type === 'radio' && this.name) {
+                var radioGroup = radioCache(this.name);
+                radioGroup.remove(this);
+            }
+            this.base.destroy();
         },
         resolve: function () {
             if (this.type === 'date' || this.type === 'time' || this.type === 'datetime' || this.type === 'datetime-local') {
                 this.$sharp = this.constructor('date-picker', {
                     visible: false,
-                    $touch: this,
+                    touch: this,
                     $$: document.body,
                     min: this.invoke("date-min"),
                     max: this.invoke("date-max"),
@@ -273,6 +321,10 @@
         commit: function () {
             this.base.commit();
             if (this.type === 'radio' || this.type === 'checkbox') {
+                if (this.type === 'radio' && this.name) {
+                    var radioGroup = radioCache(this.name);
+                    radioGroup.add(this);
+                }
                 return this.on('$click', function () {
                     if (this.type === 'checkbox') {
                         this.checked = !this.checked;

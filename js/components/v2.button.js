@@ -56,9 +56,20 @@
         render: function (variable) {
             this.base.render();
             this.addClass('btn');
-            if (!variable.addClass) {
-                this.addClass(this.type === 'submit' ? 'btn-primary' : this.type === 'reset' ? 'btn-warning' : 'btn-default');
+            switch (this.type) {
+                case 'submit':
+                    this.addClass('btn-primary');
+                    break;
+                case 'reset':
+                    this.addClass('btn-warning');
+                    break;
+                default:
+                    if (!variable.addClass) {
+                        this.addClass('btn-default');
+                    }
+                    break;
             }
+
             if (this.lg || this.sm || this.xs) {
                 this.addClass(this.lg ? 'btn-lg' : this.sm ? 'btn-sm' : 'btn-xs');
             }
@@ -95,7 +106,7 @@
         },
         resolve: function (data) {
             if (this.dropdown) {
-                this.$sharp = this.constructor('select', { $$: this.$$, master: this.master, $touch: this, data: data });
+                this.$sharp = this.constructor('select', { $$: this.$$, master: this.master, touch: this, data: data });
             }
         }
     }));

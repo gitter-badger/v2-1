@@ -74,8 +74,8 @@ require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components
         }
     });
     var i = input({
-        name: '测试',
-        type: 'checkbox',
+        name: 'name',
+        type: 'radio',
         events: {
             $click: 'click'
         },
@@ -90,7 +90,8 @@ require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components
         }
     });
     var i = input({
-        type: 'submit',
+        name: "name",
+        type: 'radio',
         events: {
             $click: 'click'
         },
@@ -172,6 +173,10 @@ require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components
             tag: 'input'
         }]
     });
+    //loading({ sm: true });
+
+    alert('会员已过期！');
+
     var vm = new Vue({
 
         el: "#app"
