@@ -5,14 +5,10 @@
     <title>测试用例</title>
     <link href="link/common.css" rel="stylesheet" />
     <script src="js/lib/ajax/axios.js"></script>
-    <script data-main="js/appsettings" src="/require.js"></script>
-    <style>
-
-    </style>
+    <script data-main="js/appsettings" src="/require.js" defer="defer" async></script>
 </head>
 <body>
     <div id="app"></div>
-    <img src="https://images.cnblogs.com/cnblogs_com/vbing/1407870/o_html_defer_async.jpg" />
     <input class="ui ui-entry ui-touch-response ui-click-response" />
     <button class="ui ui-entry ui-touch-response ui-click-response">提交</button>
     <div id="testId">
@@ -20,11 +16,7 @@
             <div id="date-picker-icon" data-test class="date-picker-icon">ldhdfifdgifugfiidf</div>
         </div>
     </div>
-    <input id="ipt" type="checkbox" value="123"/>
+    <input id="ipt" type="checkbox" value="123" />
     <div id="date-picker-icon" data-test class="date-picker-icon">的深V快递费付过款</div>
-    <script>
-        var elem = document.getElementById('date-picker-icon');
-        console.log(elem.innerHTML);
-    </script>
 </body>
 </html>

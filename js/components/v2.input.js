@@ -1,4 +1,20 @@
-﻿define(function (require) {
+﻿(function (factory) {
+    return typeof define === 'function' ?
+        define(['v2'], factory) :
+        typeof module === 'object' && module.exports ?
+            module.exports = function (root, v2kit) {
+                if (typeof v2kit === 'undefined') {
+                    if (typeof window === 'undefined') {
+                        v2kit = require('v2')(root);
+                    }
+                    else {
+                        v2kit = require('v2');
+                    }
+                }
+                return factory(v2kit);
+            } :
+            factory(v2kit);
+}(function (v2) {
     var matchExpr = {
         number: /^[+-]?(0|[1-9][0-9]*)(?:\.([0-9]+))?$/,
         tel: /^(0[0-9]{2,3}-?)?(\+86\s+)?((1[3-9][0-9]{3}|[2-9])[0-9]{6,7})+(-[0-9]{1,4})?$/,
@@ -154,8 +170,8 @@
 
     v2.use('input', {
         components: {
-            datePicker: function () {
-                return require('components/v2.datePicker');
+            datePicker: function (resolve) {
+                return require(['components/v2.datePicker'], resolve);
             }
         },
         input: function () {
@@ -363,4 +379,4 @@
     return function (options) {
         return v2('input', options);
     };
-});
+}));

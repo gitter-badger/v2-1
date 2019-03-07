@@ -4,11 +4,11 @@
     } else if (typeof module === 'object' && module.exports) {
         module.exports = function (root, v2kit) {
             if (typeof v2kit === 'undefined') {
-                if (typeof window !== 'undefined') {
-                    v2kit = require('v2');
+                if (typeof window === 'undefined') {
+                    v2kit = require('v2')(root);
                 }
                 else {
-                    v2kit = require('v2')(root);
+                    v2kit = require('v2');
                 }
             }
             factory(v2kit);

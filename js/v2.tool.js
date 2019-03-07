@@ -4,11 +4,11 @@
     } else if (typeof module === 'object' && module.exports) {
         module.exports = function (root, v2kit) {
             if (typeof v2kit === 'undefined') {
-                if (typeof window !== 'undefined') {
-                    v2kit = require('v2');
+                if (typeof window === 'undefined') {
+                    v2kit = require('v2')(root);
                 }
                 else {
-                    v2kit = require('v2')(root);
+                    v2kit = require('v2');
                 }
             }
             factory(v2kit);
@@ -48,18 +48,11 @@
         }
     });
 
-    var core_url,
+    var
         rnumber = /^(0|[1-9][0-9]*)(\.[0-9]+)?$/,
         rboolean = /^(true|false)$/i,
-        rjson = /^(\[.*\]|\{.*\})$/,
-        rurl = /^(([\w-]+:)\/\/(([^\/?#:]*)(?::(\d+))?))?((?:((?:\/[^\/?#]+)+\/)|\/)?(([\w-]+)(\.\w+)?)?)(\?[^#]*)?(#.*)?/;
-    try {
-        core_url = location.href;
-    } catch (e) {
-        var a = document.createElement("a");
-        a.href = "";
-        core_url = a.href;
-    }
+        rjson = /^(\[.*\]|\{.*\})$/;
+
     var MAX_INTEGER = Math.pow(2, 53),
         MAX_INTEGER_STRING = String(MAX_INTEGER),
         MIN_INTEGER_STRING = String(MAX_INTEGER - 1),//转正
@@ -85,72 +78,30 @@
         }
         return +string;
     }
-    var uri = v2.uri = function (url) {
-        return uriCache(url || core_url);
-    };
-    var uriCache = v2.makeCache(function (url) {
-        return new uri.fn.init(url);
-    });
     var nameCache = v2.makeCache(function (name) {
         return new RegExp("(^|&|\\?)" + encodeURIComponent(name) + "=([^&#]*)(&|#|$)", "i");
     });
-    var uriProps = {
-        href: "",
-        origin: "",
-        protocol: "",
-        host: "",
-        hostname: "",
-        port: "",
-        pathname: "/",
-        path: "/",
-        file: "",
-        filename: "",
-        extension: "",
-        search: "",
-        hash: ""
-    };
-    uri.fn = {
-        take: function (name, same) {
-            var r = nameCache(name);
-            var v = r.exec(this.href);
-            if (!v || !(v = v[2])) return "";
-            if (same) return v;
-            if (rboolean.test(v)) {
-                return v === "true" || v.toLowerCase() === "true";
-            }
-            if (rnumber.test(v)) {
-                return tryParseNumber(v);
-            }
-            v = decodeURIComponent(v);
-            if (rjson.test(v)) {
-                try {
-                    return window.JSON && v2.isFunction(window.JSON.parse) ? window.JSON.parse(v) : (new Function("return " + v))();
-                } catch (_) {
-                    return v;
-                }
-            }
-            return v;
-        },
-        init: function (url) {
-            var match;
-            if (match = rurl.exec(url)) {
-                for (var i in uriProps) {
-                    this[i] = match.shift() || uriProps[i];
-                }
-            }
-            match = undefined;
-        },
-        toQueryString: function (object) {
-            if (!object) return this.href;
-            return this.href + (this.search ? "&" : "?") + v2.toQueryString(object);
-        },
-        toString: function () {
-            return this.href;
+    Location.prototype.take = function (name, same) {
+        var r = nameCache(name);
+        var v = r.exec(this.search);
+        if (!v || !(v = v[2])) return "";
+        if (same) return v;
+        if (rboolean.test(v)) {
+            return v === "true" || v.toLowerCase() === "true";
         }
+        if (rnumber.test(v)) {
+            return tryParseNumber(v);
+        }
+        v = decodeURIComponent(v);
+        if (rjson.test(v)) {
+            try {
+                return window.JSON && v2.isFunction(window.JSON.parse) ? window.JSON.parse(v) : (new Function("return " + v))();
+            } catch (_) {
+                return v;
+            }
+        }
+        return v;
     };
-    uri.fn.init.prototype = uri.fn;
-
-    window.Uri = uri();
 
     v2.date = function (date) {
         if (!date) return new Date();

@@ -239,7 +239,7 @@
     v2.deleteCb = function (obj, value) {
         if (!obj || !value) return;
         var i = 0, name;
-        value = value.match(rnotwhite);
+        value = (value + "").match(rnotwhite);
         while (name = value[i++]) {
             if (!(name in obj)) return;
             try {
@@ -388,7 +388,6 @@
         rattr = new RegExp('^' + whitespace + '+' + attribute.replace(5, 2)),
         rtemplate = new RegExp(template);
     var rword = new RegExp(word, "gi"),
-        rstandardTag = /^<([\w-]+)|<\/([\w-]+)>$/g,
         rinject = new RegExp("^" + whitespace + "*(" + word + ")\\(((" + whitespace + "*" + word + whitespace + "*,)*" + whitespace + "*" + word + ")?" + whitespace + "*\\)" + whitespace + "*$", "i");
 
     var
@@ -524,6 +523,36 @@
         }
     };
 
+    var stackCache = {};
+    function V2Stack(master) {
+        this.ready(this.master = master);
+    }
+    V2Stack.prototype = {
+        length: 0,
+        identity: 0,
+        readyWait: 0,
+        ready: function (master) {
+            stackCache[this.identity = master.identity] = this;
+        },
+        complete: function () {
+            if (--this.readyWait) return false;
+            var callback;
+            while (callback = Array.prototype.shift.call(this)) {
+                if (callback(this.master) === false || this.readyWait > 0) return false;
+            }
+            v2.deleteCb(stackCache, this.identity);
+            return true;
+        },
+        waitSatck: function (callback) {
+            this.readyWait += 1;
+            this.pushStack(callback);
+        },
+        pushStack: function (callback) {
+            this[this.length] = callback;
+            this.length += 1;
+        }
+    };
+
     var GDir = makeCache(function (tag) {
         tag = v2.camelCase(tag);
         var tagColection = (new Function('return function ' + tag.charAt(0).toUpperCase() + tag.slice(1) + 'Colection(tag){ this.tag = tag; }'))();
@@ -544,27 +573,47 @@
         return v2[tag + 's'] = new tagColection(tag);
     });
 
-    var identity = 0,
-        CurrentV2Control = null;
+    var GLOBAL_VARIABLE_IDENTITY = 0,
+        GLOBAL_VARIABLE_READY_COMPLETE = true,
+        GLOBAL_VARIABLE_CURRENT_CONTROL = null;
+
     var xhtmlNode = document.createElement('div');
+
     v2.fn = v2.prototype = {
         constructor: function (tag, options) {
             options = options || {};
             options.master = options.master || this;
             options.$$ = options.$$ || options.master.$;
 
-            this.$components = this.$components || {};
+            var stack = stackCache[this.identity],
+                component = this.components[tag] || this.components[tag = v2.camelCase(tag)],
+                isFunction = v2.isFunction(component);
 
-            var component = this.components[tag = v2.camelCase(tag)];
+            GLOBAL_VARIABLE_READY_COMPLETE = !(isFunction || stack);
 
-            if (v2.isFunction(component)) {
-                return this.controls.add((this.$components[tag] || (this.$components[tag] = component(tag)))(options, tag));
+            var
+
+                control = v2(tag, (isFunction || !component) ? options : v2.improve(options, component)),
+                callback = function () {
+                    control.ready();
+                };
+            if (!GLOBAL_VARIABLE_READY_COMPLETE) {
+                stack = stack || new V2Stack(this);
+                stack[isFunction ? 'waitSatck' : 'pushStack'](callback);
+                GLOBAL_VARIABLE_READY_COMPLETE = true;
             }
-            return this.controls.add(v2(tag, component ? v2.improve(options, component) : options));
+            if (isFunction) {
+                component(function () {
+                    if (stack.complete()) {
+                        stack = null;
+                    }
+                });
+            }
+            return this.controls.add(control);
         },
         tag: "*",
         v2version: version,
-        identity: 0,
+        identity: GLOBAL_VARIABLE_IDENTITY,
         limit: false,
         access: false,
         visible: true,
@@ -584,6 +633,18 @@
             usb: 3,
             resolve: 4,
             commit: 8
+        },
+        stack: function (callback) {
+            var _this = this;
+            return function () {
+                var context = this,
+                    args = core_slice.call(arguments),
+                    stack = stackCache[_this.identity];
+                if (!stack) return callback.apply(this, args);
+                stack.pushStack(function () {
+                    return callback.apply(context, args);
+                });
+            };
         },
         define: function (name, extra, userDefined) {
             var my = this, contains, node = this.$core || this.$;
@@ -747,7 +808,7 @@
                     !(node = isArraylike(node) ? node[0] : node) ||
                     !(node.nodeType === 1)) {
                     if (match) {
-                        v2.append(xhtmlNode, [this.template]);
+                        this.appendAt(xhtmlNode, this.template);
                         if (xhtmlNode.childNodes.length > 1) {
                             v2.empty(xhtmlNode);
                             return v2.error('Invalid template. A template can contain only one element node!');
@@ -769,9 +830,10 @@
                     }
                     v2.empty(node);
                     var html = node.outerHTML;
-                    v2.append(xhtmlNode, [html.replace(rstandardTag, function (all, pre, next) {
-                        return all.replace(pre || next, tag);
-                    })]);
+                    if (!v2.nodeName(node, tag)) {
+                        html = html.replace(/^<([\w-]+)/, '<' + tag).replace(/<\/([\w-]+)>$/, '</' + tag + '>');
+                    }
+                    this.appendAt(xhtmlNode, html);
                     var next = node.nextSibling;
                     context.removeChild(node);
                     context.insertBefore(node = xhtmlNode.lastChild, next);
@@ -886,7 +948,13 @@
                                 }
                             default:
                                 if (_contains && !(key in options ? options[key] : options[key] = v2.isFunction(_value))) {
-                                    context[key] = value;
+                                    try {
+                                        context[key] = value;
+                                    } catch (_) {
+                                        console.log(context);
+                                        console.log(key);
+                                        console.log(value);
+                                    }
                                 }
                                 variable[key] = value;
                                 break;
@@ -918,14 +986,14 @@
 
             v2.defineReadonly(this, "namespace", namespace);
 
-            v2.defineReadonly(this, "identity", ++identity);
+            v2.defineReadonly(this, "identity", ++GLOBAL_VARIABLE_IDENTITY);
 
             renderWildCard(this, function (type) {
                 return type !== 'function';
             }, variable);
         },
         init: function (tag, option) {
-            var type, render, controls;
+            var controls;
 
             this.tag = tag;
             this.option = option;
@@ -961,7 +1029,16 @@
                 }
             });
 
+            if (GLOBAL_VARIABLE_READY_COMPLETE) {
+                this.ready();
+            }
+        },
+        ready: function () {
+            var type, render;
+
             this.build();
+
+
             if (this.ajax && this.access) {
                 render = this.render;
                 this.render = function () {
@@ -1009,6 +1086,7 @@
                 }
                 return sleep;
             };
+
             this.switchCase();
         },
         usb: function () {
@@ -1105,8 +1183,8 @@
                 falseStop = state;
                 state = undefined;
             }
-            var v2Control = CurrentV2Control;
-            CurrentV2Control = this;
+            var v2Control = GLOBAL_VARIABLE_CURRENT_CONTROL;
+            GLOBAL_VARIABLE_CURRENT_CONTROL = this;
             var value, isReady = true;
             falseStop = falseStop == null ? true : falseStop;
             for (state in this.enumState) {
@@ -1128,7 +1206,7 @@
                 }
             }
             this.isReady = isReady;
-            CurrentV2Control = v2Control;
+            GLOBAL_VARIABLE_CURRENT_CONTROL = v2Control;
         },
         destroy: function (deep) {
             v2.each(this.namespace.split("."), function (tag) {
@@ -3005,7 +3083,7 @@
             }
             if (type[0] === '$') {
                 type = type.slice(1);
-                fn = fn[this.identity] || (fn[this.identity] = (function (context, callback) {
+                fn = fn[this.GLOBAL_VARIABLE_IDENTITY] || (fn[this.GLOBAL_VARIABLE_IDENTITY] = (function (context, callback) {
                     return function (e) {
                         return callback.call(context, e);
                     };
@@ -3209,22 +3287,22 @@
         xhr_abort = xhr.abort;
     v2.extend(xhrCb.prototype, {
         open: function (_method, _url, async) {
-            if (async && CurrentV2Control) {
+            if (async && GLOBAL_VARIABLE_CURRENT_CONTROL) {
                 var status, xhr = this,
-                    v2Control = CurrentV2Control,
-                    identity = v2Control.identity;
+                    v2Control = GLOBAL_VARIABLE_CURRENT_CONTROL,
+                    GLOBAL_VARIABLE_IDENTITY = v2Control.GLOBAL_VARIABLE_IDENTITY;
                 v2Control.sleep(true);
-                if (xhrWait[identity]) {
-                    xhrWait[identity] += 1;
+                if (xhrWait[GLOBAL_VARIABLE_IDENTITY]) {
+                    xhrWait[GLOBAL_VARIABLE_IDENTITY] += 1;
                 } else {
-                    xhrWait[identity] = 1;
+                    xhrWait[GLOBAL_VARIABLE_IDENTITY] = 1;
                 }
                 xhrCallbacks[xhr.xhrId = ++xhrId] = function () {
                     if (xhr.readyState === 4) {
                         status = xhr.status;
                         xhr.onreadystatechange = noop;
                         if (status >= 200 && status < 300 || status === 304 || status === 1223) {
-                            if (!(xhrWait[identity] -= 1)) {
+                            if (!(xhrWait[GLOBAL_VARIABLE_IDENTITY] -= 1)) {
                                 v2Control.sleep(false);
                             }
                         }
@@ -3271,242 +3349,4 @@
         define("v2", [], function () { return v2; });
     }
     window.v2kit = window.v2 = v2;
-});
-
-(function (global, factory) {
-    return typeof exports === 'object' && typeof module === "object" ?
-        module.exports = global.document ?
-            factory(global) :
-            function (window) {
-                if (window.document == null) throw new Error("v2 requires a window with a document");
-                return factory(window);
-            } :
-        factory(global);
-})(this, function (window) {
-    v2.use('modal', {
-        modal: function () {
-            /** 动画 为 主 元素添加 .fade 类。 */
-            this.animate = true;
-            /** 显示遮罩层 */
-            this.backdrop = true;
-        },
-        render: function () {
-            this.base.render();
-            this.addClass('modal');
-            if (this.backdrop) {
-                this.$backdrop = this.after('.modal-backdrop'.htmlCoding()).next();
-            }
-            if (this.animate) {
-                this.addClass('fade');
-                if (this.backdrop) {
-                    this.addClassAt(this.$backdrop, 'fade');
-                }
-            }
-            this.$dialog = this.append('.modal-dialog'.htmlCoding()).last();
-        },
-        show: function () {
-            this.base.show();
-            this.addClass('in')
-                .addClassAt(this.$$, 'modal-open');
-            if (this.backdrop) {
-                this.addClassAt(this.$backdrop, 'in');
-            }
-            return false;
-        },
-        hide: function () {
-            this.base.hide();
-            this.removeClass('in')
-                .removeClassAt(this.$$, 'modal-open');
-            if (this.backdrop) {
-                this.removeClassAt(this.$backdrop, 'in');
-            }
-            return false;
-        },
-        close: function () {
-            this.hide();
-            this.destroy();
-        }
-    });
-    v2.use('modal.wait', {
-        wait: function () {
-            /** 超小加载框 */
-            this.xs = false;
-            /** 小加载框 */
-            this.sm = false;
-            /** 大加载框 */
-            this.lg = false;
-        },
-        render: function () {
-            this.base.render();
-            this.addClass('modal-wait');
-            if (this.backdrop) {
-                this.addClassAt(this.$backdrop, 'modal-wait');
-            }
-            if (this.xs || this.sm || this.lg) {
-                this.addClass(this.lg ? 'modal-wait-lg' : this.sm ? 'modal-wait-sm' : 'modal-wait-xs');
-            }
-        }
-    });
-    v2.use('modal.dialog', {
-        components: {
-            button: function () {
-                return require('components/v2.button');
-            },
-            buttonGroup: function () {
-                return require('components/v2.buttonGroup');
-            }
-        },
-        dialog: function () {
-            this.title = '温馨提示';
-            /** 显示标题栏 */
-            this.header = true;
-            /** 显示页脚 */
-            this.footer = true;
-            /** 按钮 */
-            this.buttons = [];
-        },
-        render: function () {
-            this.base.render();
-            this.appendAt(this.$dialog, '.modal-content>(.modal-header>button.close[aria-hidden]{×}+h4.modal-title)+.modal-body+.modal-footer'.htmlCoding());
-            this.$content = this.take('.modal-content', this.$dialog);
-            this.$header = this.take('.modal-header', this.$content);
-            this.$title = this.take('.modal-title', this.$header);
-            this.$body = this.take('.modal-body', this.$content);
-            this.$footer = this.take('.modal-footer', this.$content);
-        },
-        usb: function () {
-            this.base.usb();
-            this.define({
-                title: function (value) {
-                    this.emptyAt(this.$title)
-                        .appendAt(this.$title, value);
-                },
-                header: function (value) {
-                    v2.toggleClass(this.$header, 'hidden', !value);
-                },
-                footer: function (value) {
-                    v2.toggleClass(this.$footer, 'hidden', !value);
-                }
-            }, true);
-        },
-        bodyBuild: function (data) {
-            var type = v2.type(data);
-            this.emptyAt(this.$body);
-            switch (type) {
-                case 'string':
-                    this.appendAt(this.$body, data);
-                    break;
-                case 'array':
-                    v2.each(data, function (option) {
-                        this.bodyBuild(option);
-                    }, this);
-                case 'object':
-                    if (data.nodeType) {
-                        this.appendAt(this.$body, data);
-                        break;
-                    }
-                    data.$$ = this.$body;
-                    this.constructor(data.tag, data);
-                    break;
-                default:
-                    v2.error('Not support:The dialog component does not support this type(' + type + ').');
-            }
-        },
-        resolve: function (data) {
-            this.bodyBuild(data);
-            v2.each(this.buttons, function (option) {
-                option.$$ = this.$footer;
-                this.constructor(option.tag || 'button', option);
-            }, this);
-        },
-        commit: function () {
-            this.base.commit();
-            this.on('$click', '[aria-hidden]', function () {
-                this.hide();
-            }).onAt(document, '$keyup', function (e) {
-                var code = e.keyCode || e.which;
-                if (code === 27 || code === 96) {
-                    this.hide();
-                }
-            });
-        }
-    });
-    v2.use('modal.dialog.alert', {
-        alert: function () {
-            /** 不显示遮罩层 */
-            this.backdrop = false;
-        },
-        render: function () {
-            this.base.render();
-            var my = this;
-            this.buttons = [{
-                text: "确定",
-                type: "submit",
-                events: {
-                    click: function () {
-                        if (my.invoke('ok-event') !== false) {
-                            my.close();
-                        }
-                    }
-                }
-            }];
-        }
-    });
-    v2.use('modal.dialog.confirm', {
-        confirm: function () {
-            /** 不显示遮罩层 */
-            this.backdrop = false;
-        },
-        render: function () {
-            this.base.render();
-            var my = this;
-            this.buttons = [{
-                text: "确定",
-                type: "submit",
-                events: {
-                    click: function () {
-                        if (my.invoke('ok-event') !== false) {
-                            my.close();
-                        }
-                    }
-                }
-            }, {
-                text: "取消",
-                type: "button",
-                events: {
-                    click: function () {
-                        if (my.invoke('cancel-event') !== false) {
-                            my.close();
-                        }
-                    }
-                }
-            }];
-        }
-    });
-
-    window.alert = function (msg, title, okFn) {
-        if (v2.isFunction(title)) {
-            okFn = title;
-            title = null;
-        }
-        return v2('alert', {
-            title: title || "温馨提示",
-            data: msg,
-            okEvent: okFn
-        });
-    };
-
-    window.confirm = function (msg, title, okFn, cancelFn) {
-        if (v2.isFunction(title)) {
-            cancelFn = okFn;
-            okFn = title;
-            title = null;
-        }
-        return v2('confirm', {
-            title: title || "温馨提示",
-            data: msg,
-            okEvent: okFn,
-            cancelEvent: cancelFn
-        });
-    }
 });

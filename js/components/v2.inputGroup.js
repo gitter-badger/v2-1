@@ -1,14 +1,30 @@
-﻿define(function (require) {
+﻿(function (factory) {
+    return typeof define === 'function' ?
+        define(['v2'], factory) :
+        typeof module === 'object' && module.exports ?
+            module.exports = function (root, v2kit) {
+                if (typeof v2kit === 'undefined') {
+                    if (typeof window === 'undefined') {
+                        v2kit = require('v2')(root);
+                    }
+                    else {
+                        v2kit = require('v2');
+                    }
+                }
+                return factory(v2kit);
+            } :
+            factory(v2kit);
+}(function (v2) {
     v2.use("input-group", {
         components: {
-            input: function () {
-                return require('components/v2.input');
+            input: function (resolve) {
+                return require(['components/v2.input'], resolve);
             },
-            button: function () {
-                return require('components/v2.button');
+            button: function (resolve) {
+                return require(['components/v2.button'], resolve);
             },
-            buttonGroup: function () {
-                return require('components/v2.buttonGroup');
+            buttonGroup: function (resolve) {
+                return require(['components/v2.buttonGroup'], resolve);
             }
         },
         inputGroup: function () {
@@ -60,18 +76,18 @@
             });
         },
         resolve: function (data) {
-            v2.each(data, function (option) {
+            v2.each(data, this.stack(function (option) {
                 if (v2.isString(option)) {
                     return this.append(('span.input-group-addon{' + option + '}').htmlCoding());
                 }
                 if (option.tag === 'input' && (option.type === 'radio' || option.type === 'checkbox')) {
                     option.$$ = this.append('span.input-group-addon'.htmlCoding()).last();
                 }
-                return this.constructor(option.tag, option);
-            }, this);
+                this.constructor(option.tag, option);
+            }), this);
         }
     });
     return function (options) {
         return v2('input-group', options);
     };
-});
+}));

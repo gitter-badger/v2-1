@@ -2,469 +2,383 @@
     /** 控件基类(承载主控被重写之前的方法) */
     interface V2ControlBase {
         /** 基础 */
-        readonly base: V2ControlBase,
-        /**
+        readonly base: V2ControlBase;		/**
          * 初始化控件（查询或 生产主元素）
          * @param tag 控件元素TAG，默认：div
          */
-        init(tag?: string): any,
-        /**
+        init(tag?: string): any;		/**
          * 渲染控件
          * @param variable 入参变量
          */
-        render(variable: PlainObject): any,
-        /** 取数（无论同步还是异步，控件都将在取数完成后自动继续渲染控件） */
-        ajax(): any,
-        /** 将控件属性和核心元素属性进行绑定 */
-        usb(): any,
-        /** 解决(生成控件内容，处理控件复杂逻辑) */
-        resolve(): any,
-        /** 完成提交（绑定事件） */
-        commit(): any,
-        /** 显示控件 */
-        show(): any,
-        /** 隐藏控件 */
-        hide(): any,
-        /** 反转当前控件显示/隐藏状态 */
-        toggle(): any,
-        /**
+        render(variable: PlainObject): any;		/**
+         * 控件堆栈（控件会按照堆载顺序执行，当遇到异步加载的控件时，方法会被暂停，等待异步加载完成后继续执行。）
+         * @param callback
+         */
+        stack<T extends Function, TReturn extends T>(callback: T): TReturn;        /** 插件准备 */
+        ready(): any;        /** 取数（无论同步还是异步，控件都将在取数完成后自动继续渲染控件） */
+        ajax(): any;        /** 将控件属性和核心元素属性进行绑定 */
+        usb(): any;        /** 解决(生成控件内容，处理控件复杂逻辑) */
+        resolve(): any;        /** 完成提交（绑定事件） */
+        commit(): any;        /** 显示控件 */
+        show(): any;        /** 隐藏控件 */
+        hide(): any;        /** 反转当前控件显示/隐藏状态 */
+        toggle(): any;		/**
          * 隐藏或显示控件
          * @param toggle 为true时显示控件，否则隐藏控件
          */
-        toggle(toggle: boolean): any,
-        /**
+        toggle(toggle: boolean): any;		/**
          * 启用或禁用当前控件
          * @param disabled 为true时禁用，否则启用
          */
-        disabled(disabled: boolean): any,
-        /**
+        disabled(disabled: boolean): any;		/**
          * 提取元素
          * @param selector 元素选择器
          * @param context 提取元素选择器的范围对象。
          */
-        take(selector: string, context?: Node): Node,
-        /**
+        take(selector: string, context?: Node): Node;		/**
          * 提取元素
          * @param selector 元素选择器
          * @param context 提取元素选择器的范围对象。
          */
-        take(selector: Node, context?: Node): Node,
-        /**
+        take(selector: Node, context?: Node): Node;		/**
          * 基础配置初始化。
          * @param option 基础配置入参。
          */
-        baseConfigs(option: PlainObject): any,
-        /** 构件控件 */
-        build(): any,
-        /**
+        baseConfigs(option: PlainObject): any;        /** 构件控件 */
+        build(): any;		/**
          * 执行方法
          * @param callback 回调函数
          * @param args 回调函数参数
          */
-        invoke(callback: string, ...args: any): any,
-        /**
+        invoke(callback: string, ...args: any): any;		/**
          * 执行控件中名称为“callback”的方法
          * @param callback 回调函数
          * @param args 回调函数参数
          */
-        invoke(callback: string, ...args: any): any,
-        /** 使控件获取焦点 */
-        focus(): any,
-        /**
+        invoke(callback: string, ...args: any): any;        /** 使控件获取焦点 */
+        focus(): any;		/**
         * 控件主元素是否包含名为“value”的类名
         * @param value 类名
         * @returns 是否包含类名。
         */
-        hasClass(value: string): boolean,
-        /**
+        hasClass(value: string): boolean;		/**
         * 指定元素是否包含名为“value”的类名
         * @param elem 元素
         * @param value 类名
         * @returns 是否包含类名。
         */
-        hasClassAt(elem: Element, value: string): boolean,
-        /**
+        hasClassAt(elem: Element, value: string): boolean;		/**
          * 添加类名
          * @param value 类名
          */
-        addClass(value: string): V2Control,
-        /**
+        addClass(value: string): V2Control;		/**
          * 指定元素添加类名
          * @param elem 元素
          * @param value 类名
          */
-        addClassAt(elem: Element, value: string): V2Control,
-        /**
+        addClassAt(elem: Element, value: string): V2Control;		/**
          * 移除类名
          * @param value 类名(多个时，用空格分开)
          */
-        removeClass(value: string): V2Control,
-        /**
+        removeClass(value: string): V2Control;		/**
          * 指定元素移除类名
          * @param elem 元素
          * @param value 类名(多个时，用空格分开)
          */
-        removeClassAt(elem: Element, value: string): V2Control,
-        /**
+        removeClassAt(elem: Element, value: string): V2Control;		/**
          * 如果主元素包含名为“value”的类名，则移除该类名，否则添加该类名。
          * @param value 类名
          */
-        toggleClass(value: string): V2Control,
-        /**
+        toggleClass(value: string): V2Control;		/**
          * 如果“toggle”为true，向主元素添加类名“value”，否则移除类名“value”。
          * @param value 类名
          * @param toggle 开关
          */
-        toggleClass(value: string, toggle: boolean): V2Control,
-        /**
+        toggleClass(value: string, toggle: boolean): V2Control;		/**
          * 如果指定元素包含名为“value”的类名，则移除该类名，否则添加该类名。
          * @param elem 元素
          * @param value 类名
          */
-        toggleClassAt(elem: Element, value: string): V2Control,
-        /**
+        toggleClassAt(elem: Element, value: string): V2Control;		/**
          * 如果“toggle”为true，向指定元素添加类名“value”，否则移除类名“value”。
          * @param elem 元素
          * @param value 类名
          * @param toggle 开关
          */
-        toggleClassAt(elem: Element, value: string, toggle: boolean): V2Control,
-        /**
+        toggleClassAt(elem: Element, value: string, toggle: boolean): V2Control;		/**
          * 获取style属性值
          * @param name style属性名称
          */
-        css(name: string): number | string,
-        /**
+        css(name: string): number | string;		/**
          * 获取style属性值
          * @param name style属性名称数组集合
          */
-        css(name: Array<string>): PlainObject,
-        /**
+        css(name: Array<string>): PlainObject;		/**
          * 设置style属性值
          * @param name style属性名称和属性值对象
          */
-        css(name: PlainObject): V2Control,
-        /**
+        css(name: PlainObject): V2Control;		/**
          * 设置style属性值
          * @param name 属性名称
          * @param value 属性值
          */
-        css(name: string, value: any): V2Control,
-        /**
+        css(name: string, value: any): V2Control;		/**
          * 指定元素获取style属性值
          * @param elem 元素
          * @param name style属性名称
          */
-        cssAt(elem: Element, name: string): number | string,
-        /**
+        cssAt(elem: Element, name: string): number | string;		/**
          * 指定元素获取style属性值
          * @param elem 元素
          * @param name style属性名称数组集合
          */
-        cssAt(elem: Element, name: Array<string>): PlainObject,
-        /**
+        cssAt(elem: Element, name: Array<string>): PlainObject;		/**
          * 指定元素设置style属性值
          * @param elem 元素
          * @param name style属性名称和属性值对象
          */
-        cssAt(elem: Element, name: PlainObject): V2Control,
-        /**
+        cssAt(elem: Element, name: PlainObject): V2Control;		/**
          * 指定元素设置style属性值
          * @param elem 元素
          * @param name 属性名称
          * @param value 属性值
          */
-        cssAt(elem: Element, name: string, value: any): V2Control,
-        /**
+        cssAt(elem: Element, name: string, value: any): V2Control;		/**
          * 获取属性值
          * @param name 属性名称
          */
-        attr(name: string): any,
-        /**
+        attr(name: string): any;		/**
          * 获取属性值
          * @param name 属性名称数组
          */
-        attr(name: Array<string>): PlainObject,
-        /**
+        attr(name: Array<string>): PlainObject;		/**
          * 设置属性值
          * @param name 包含属性名称和属性值的对象
          */
-        attr(name: PlainObject): V2Control,
-        /**
+        attr(name: PlainObject): V2Control;		/**
          * 设置属性值
          * @param name 属性名称
          * @param value 属性值
          */
-        attr(name: string, value: string): V2Control,
-        /**
+        attr(name: string, value: string): V2Control;		/**
          * 移除属性
          * @param value 属性名称(多个时，用空格分开)
          */
-        removeAttr(value: string): V2Control,
-        /**
+        removeAttr(value: string): V2Control;		/**
          * 指定元素获取属性值
          * @param elem 元素
          * @param name 属性名称
          */
-        attrAt(elem: Element, name: string): any,
-        /**
+        attrAt(elem: Element, name: string): any;		/**
          * 指定元素获取属性值
          * @param elem 元素
          * @param name 属性名称数组
          */
-        attrAt(elem: Element, name: Array<string>): PlainObject,
-        /**
+        attrAt(elem: Element, name: Array<string>): PlainObject;		/**
          * 指定元素设置属性值
          * @param elem 元素
          * @param name 包含属性名称和属性值的对象
          */
-        attrAt(elem: Element, name: PlainObject): V2Control,
-        /**
+        attrAt(elem: Element, name: PlainObject): V2Control;		/**
          * 指定元素设置属性值
          * @param elem 元素
          * @param name 属性名称
          * @param value 属性值
          */
-        attrAt(elem: Element, name: string, value: string): V2Control,
-        /**
+        attrAt(elem: Element, name: string, value: string): V2Control;		/**
          * 指定元素移除属性
          * @param elem 元素
          * @param value 属性名称(多个时，用空格分开)
          */
-        removeAttrAt(elem: Element, value: string): V2Control,
-        /**
+        removeAttrAt(elem: Element, value: string): V2Control;		/**
          * 获取属性值
          * @param name 属性名称
          */
-        prop(name: string): any,
-        /**
+        prop(name: string): any;		/**
          * 获取属性值
          * @param name 属性名称数组
          */
-        prop(name: Array<string>): PlainObject,
-        /**
+        prop(name: Array<string>): PlainObject;		/**
          * 设置属性值
          * @param name 包含属性名称和属性值的对象
          */
-        prop(name: PlainObject): V2Control,
-        /**
+        prop(name: PlainObject): V2Control;		/**
          * 设置属性值
          * @param name 属性名称
          * @param value 属性值
          */
-        prop(name: string, value: any): V2Control,
-        /**
+        prop(name: string, value: any): V2Control;		/**
          * 移除属性
          * @param value 属性名称(多个时，用空格分开)
          */
-        removeProp(value: string): V2Control,
-        /**
+        removeProp(value: string): V2Control;		/**
          * 指定元素获取属性值
          * @param elem 元素
          * @param name 属性名称
          */
-        propAt(elem: Element, name: string): any,
-        /**
+        propAt(elem: Element, name: string): any;		/**
          * 指定元素获取属性值
          * @param elem 元素
          * @param name 属性名称数组
          */
-        propAt(elem: Element, name: Array<string>): PlainObject,
-        /**
+        propAt(elem: Element, name: Array<string>): PlainObject;		/**
          * 指定元素设置属性值
          * @param elem 元素
          * @param name 包含属性名称和属性值的对象
          */
-        propAt(elem: Element, name: PlainObject): V2Control,
-        /**
+        propAt(elem: Element, name: PlainObject): V2Control;		/**
          * 指定元素设置属性值
          * @param elem 元素
          * @param name 属性名称
          * @param value 属性值
          */
-        propAt(elem: Element, name: string, value: any): V2Control,
-        /**
+        propAt(elem: Element, name: string, value: any): V2Control;		/**
          * 移除属性
          * @param elem 元素
          * @param value 属性名称(多个时，用空格分开)
          */
-        removeProp(elem: Element, value: string): V2Control,
-        /** 获取控件宽度 */
-        width(): number | string,
-        /**
+        removeProp(elem: Element, value: string): V2Control;        /** 获取控件宽度 */
+        width(): number | string;		/**
          * 设置控件宽度
          * @param width 宽度
          * @returns 是否设置成功
          */
-        width(width: number): boolean,
-        /**
+        width(width: number): boolean;		/**
          * 设置控件宽度
          * @param width 宽度([+-/*]?\d+.\d+(px|%|))
          * @returns 是否设置成功
          */
-        width(width: string): boolean,
-        /** 获取控件高度 */
-        height(): number | string,
-        /**
+        width(width: string): boolean;        /** 获取控件高度 */
+        height(): number | string;		/**
          * 设置控件高度
          * @param width 高度
          * @returns 是否设置成功
          */
-        height(width: number): boolean,
-        /**
+        height(width: number): boolean;		/**
          * 设置控件高度
          * @param width 高度([+-/*]?\d+.\d+(px|%|))
          * @returns 是否设置成功
          */
-        height(width: string): boolean,
-        /**
+        height(width: string): boolean;		/**
          * 绑定事件
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param fn 事件回调函数
          */
-        on(type: string, fn: Function): V2Control,
-        /**
+        on(type: string, fn: Function): V2Control;		/**
          * 绑定事件
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param selector 控件作用的子元素选择器
          * @param fn 事件回调函数
          */
-        on(type: string, selector: string, fn: Function): V2Control,
-        /**
+        on(type: string, selector: string, fn: Function): V2Control;		/**
          * 指定元素绑定事件
          * @param elem 元素
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param fn 事件回调函数
          */
-        onAt(elem: Element, type: string, fn: Function): V2Control,
-        /**
+        onAt(elem: Element, type: string, fn: Function): V2Control;		/**
          * 指定元素绑定事件
          * @param elem 元素
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param selector 控件作用的子元素选择器
          * @param fn 事件回调函数
          */
-        onAt(elem: Element, type: string, selector: string, fn: Function): V2Control,
-        /**
+        onAt(elem: Element, type: string, selector: string, fn: Function): V2Control;		/**
          * 解绑事件
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param fn 事件回调函数
          */
-        off(type: string, fn: Function): V2Control,
-        /**
+        off(type: string, fn: Function): V2Control;		/**
          * 解绑事件
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param selector 控件作用的子元素选择器
          * @param fn 事件回调函数
          */
-        off(type: string, selector: string, fn: Function): V2Control,
-        /**
+        off(type: string, selector: string, fn: Function): V2Control;		/**
          * 指定元素解绑事件
          * @param elem 元素
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param fn 事件回调函数
          */
-        offAt(elem: Element, type: string, fn: Function): V2Control,
-        /**
+        offAt(elem: Element, type: string, fn: Function): V2Control;		/**
          * 指定元素解绑事件
          * @param elem 元素
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param selector 控件作用的子元素选择器
          * @param fn 事件回调函数
          */
-        offAt(elem: Element, type: string, selector: string, fn: Function): V2Control,
-        /**
+        offAt(elem: Element, type: string, selector: string, fn: Function): V2Control;		/**
          * 向主元素追加子元素
          * @param args 元素集合
          */
-        append(...args: Array<number | string | Element>): V2Control,
-        /**
+        append(...args: Array<number | string | Element>): V2Control;		/**
          * 向主元素首部插入子元素
          * @param args 元素集合
          */
-        prepend(...args: Array<number | string | Element>): V2Control,
-        /**
+        prepend(...args: Array<number | string | Element>): V2Control;		/**
          * 在主元素之前插入元素
          * @param args 元素集合
          */
-        before(...args: Array<number | string | Element>): V2Control,
-        /**
+        before(...args: Array<number | string | Element>): V2Control;		/**
          * 在主元素之后插入元素
          * @param args 元素集合
          */
-        after(...args: Array<number | string | Element>): V2Control,
-        /** 移除主元素所有子节点 */
-        empty(): V2Control,
-        /**
+        after(...args: Array<number | string | Element>): V2Control;        /** 移除主元素所有子节点 */
+        empty(): V2Control;		/**
          * 按照状态持续构建插件。
          * @param state 状态，不传的时候取控件当前状态。
          * @param falseStop 状态对应方法返回 false 时，是否终止执行。
          */
-        switchCase(state?: number, falseStop?: true): any,
-        /**
+        switchCase(state?: number, falseStop?: true): any;		/**
          * 释放插件。
          * @param deep 是否深度释放插件。深度释放时，插件内属性以及属性对象包含的属性都会被释放。
          */
-        destroy(deep?: boolean): any,
-        /**
+        destroy(deep?: boolean): any;		/**
          * 定义属性
          * @param names 多个名称用空格分开。
          */
-        define(names: string): V2Control,
-        /**
+        define(names: string): V2Control;		/**
          * 定义多个属性
          * @param value 属性对象
          */
-        define(value: PlainObject): V2Control,
-        /**
+        define(value: PlainObject): V2Control;		/**
          * 定义属性
          * @param names 多个名称用空格分开。
          * @param userDefined 是否为用户自定义的属性。
          */
-        define(names: string, userDefined: boolean): V2Control,
-        /**
+        define(names: string, userDefined: boolean): V2Control;		/**
          * 定义属性
          * @param name 属性名称
          * @param attributes 属性描述
          */
-        define(name: string, attributes: PlainObject): V2Control,
-        /**
+        define(name: string, attributes: PlainObject): V2Control;		/**
          * 定义属性（通过attributeSet方法设置值）
          * @param name 属性名称。
          * @param attributeSet 设置属性值的方法。
          */
-        define(name: string, attributeSet: (value: any) => any): V2Control,
-        /**
+        define(name: string, attributeSet: (value: any) => any): V2Control;		/**
          * 定义属性（通过attributeSet方法设置值）
          * @param name 属性名称。
          * @param attributeSet 设置属性值的方法。
          * @param userDefined 是否为用户自定义的属性。
          */
-        define(name: string, attributeSet: (value: any) => any, userDefined: boolean): V2Control,
-        /** 返回主元素的子元素集合 */
-        when(): ArrayThen,
-        /**
+        define(name: string, attributeSet: (value: any) => any, userDefined: boolean): V2Control;        /** 返回主元素的子元素集合 */
+        when(): ArrayThen;		/**
          * 放回当前选择器查询到元素的子元素集合。
          * @param selector 选择器
          */
-        when(selector: string): ArrayThen,
-        /**
+        when(selector: string): ArrayThen;		/**
          * 返回指定元素的子元素集合。
          * @param elem
          */
-        when(elem: Element): ArrayThen,
-        /**
+        when(elem: Element): ArrayThen;		/**
          * 返回当前数组的元素集合。
          * @param arr 数组
          */
-        when(arr: ArrayLike<any>): ArrayThen,
-        /** 返回主元素的第一个元素 */
-        first(): Element,
-        /** 返回主元素的最后一个元素 */
-        last(): Element,
-        /** 返回主元素的上一个兄弟元素 */
-        prev(): Element,
-        /** 返回主元素的下一个兄弟元素 */
+        when(arr: ArrayLike<any>): ArrayThen;        /** 返回主元素的第一个元素 */
+        first(): Element;        /** 返回主元素的最后一个元素 */
+        last(): Element;        /** 返回主元素的上一个兄弟元素 */
+        prev(): Element;        /** 返回主元素的下一个兄弟元素 */
         next(): Element
     }
     /** 控件 */
@@ -474,37 +388,23 @@
          * @param tag TAG
          * @param options 配置项
          */
-        constructor(tag: string, options: V2ControlExtensions): V2ControlExtensions,
-        /** 【yes】版本号 */
-        readonly v2version: string,
-        /** tag名称 */
-        readonly tag: string,
-        /** 控件身份ID */
-        readonly identity: number,
-        /** 类名空间 */
-        readonly namespace: string,
-        /** 是否准备完成（默认：false） */
-        readonly isReady: boolean,
-        /**
+        constructor(tag: string, options: V2ControlExtensions): V2ControlExtensions;        /** 【yes】版本号 */
+        readonly v2version: string;        /** tag名称 */
+        readonly tag: string;        /** 控件身份ID */
+        readonly identity: number;        /** 类名空间 */
+        readonly namespace: string;        /** 是否准备完成（默认：false） */
+        readonly isReady: boolean;		/**
          * 隐藏或显示控件(默认：true)
          * @param visible 为true时显示控件，否则隐藏控件
          */
-        visible: boolean,
-        /** 入参变量(入参) */
-        readonly variable: PlainObject,
-        /** 母控件 */
-        readonly master: V2Control,
-        /** 为真时采用“max-width”和“max-height”限制控件大小，否则采用“width”和“height”限制控件大小. 默认：false*/
-        limit: boolean,
-        /** 是否加载控件的时候加载数据，为真并且存在“ajax”方法时，在“render”方法完成后自动调用“ajax”方法并等待数据加载完成后继续渲染控件，否则控件直接渲染完成。默认：false */
-        access: boolean,
-        /** 模板 */
-        template: string,
-        /** 主元素 */
-        $: Node,
-        /** 主元素的父元素 */
-        $$: Node,
-        /** 控件状态枚举。控件运行时依照对象值重小到大依次调用方法(值在2-4之间（不包含2和4）时，将当前控件的入参变量注入调用的方法) 
+        visible: boolean;        /** 入参变量(入参) */
+        readonly variable: PlainObject;        /** 母控件 */
+        readonly master: V2Control;        /** 为真时采用“max-width”和“max-height”限制控件大小，否则采用“width”和“height”限制控件大小. 默认：false*/
+        limit: boolean;        /** 是否加载控件的时候加载数据，为真并且存在“ajax”方法时，在“render”方法完成后自动调用“ajax”方法并等待数据加载完成后继续渲染控件，否则控件直接渲染完成。默认：false */
+        access: boolean;        /** 模板 */
+        template: string;        /** 主元素 */
+        $: Node;        /** 主元素的父元素 */
+        $$: Node;		/** 控件状态枚举。控件运行时依照对象值重小到大依次调用方法(值在2-4之间（不包含2和4）时，将当前控件的入参变量注入调用的方法) 
          * 默认：{
             pending: 0.5, // 准备
             init: 1, // 初始化（查询或生产主元素）
@@ -519,8 +419,7 @@
     /**通配符  */
     interface WildCard {
         /** 类型（多个时以“|”分割,任意类型时用“*”） */
-        type: string,
-        /**
+        type: string;		/**
          * 满足类型时的执行方法
          * @param control 控件
          * @param value 满足当前控制器的属性值（type为“function”时，返回控件的key属性值，否则返回控件“入参变量”的key属性值）。
@@ -546,28 +445,23 @@
          * 过滤数组
          * @param callback 返回true，则当前迭代元素加入数组。
          */
-        when(callback: (value: T, index: number, array: ArrayThen<T>) => boolean): ArrayThen<T>,
-        /**
+        when(callback: (value: T, index: number, array: ArrayThen<T>) => boolean): ArrayThen<T>;		/**
          * 遍历数组
          * @param callback 分别执行当前数组中的元素。
          */
-        then(callback: (value: T, index: number, array: ArrayThen<T>) => any): ArrayThen<T>,
-        /**
+        then(callback: (value: T, index: number, array: ArrayThen<T>) => any): ArrayThen<T>;		/**
          * 返回映射后的数组元素。
          * @param callback 分别执行当前数组中的元素。
          */
-        map<TReturn>(callback: (value: T, index: number, array: ArrayThen<T>) => TReturn | ArrayLike<TReturn>): ArrayThen<TReturn>,
-        /**
+        map<TReturn>(callback: (value: T, index: number, array: ArrayThen<T>) => TReturn | ArrayLike<TReturn>): ArrayThen<TReturn>;		/**
          * 返回只包含第i个元素的数组对象。
          * @param i
          */
-        eq(i: number): ArrayThen<T>,
-        /**
+        eq(i: number): ArrayThen<T>;		/**
          * 返回只包含第i个元素的数组对象。
          * @param i
          */
-        nth(i: number): ArrayThen<T>,
-        /**
+        nth(i: number): ArrayThen<T>;		/**
          * 遍历数组(并释放数组)
          * @param callback 分别执行当前数组中的元素。
          */
