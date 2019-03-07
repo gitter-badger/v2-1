@@ -531,23 +531,35 @@
         length: 0,
         identity: 0,
         readyWait: 0,
+        readyComplete: 0,
         ready: function (master) {
             stackCache[this.identity = master.identity] = this;
         },
         complete: function () {
-            if (--this.readyWait) return false;
-            var callback;
-            while (callback = Array.prototype.shift.call(this)) {
-                if (callback(this.master) === false || this.readyWait > 0) return false;
+            this.readyComplete += 1;
+            var fired, callback, readyWait = this.readyWait -= 1;
+            while (callback = this[0]) {
+                fired = this.readyComplete === callback.readyWait || readyWait === 0;
+                if (fired) {
+                    callback(this.master);
+                    core_splice.call(this, 0, 1);
+                }
+                if (!fired ||
+                    this.readyWait > readyWait ||
+                    callback.readyWait > this.readyComplete) return false;
             }
             v2.deleteCb(stackCache, this.identity);
-            return true;
+            return this.readyWait === 0;
         },
         waitSatck: function (callback) {
             this.readyWait += 1;
+            if (this.readyComplete > 0) {
+                this.readyComplete -= 1;
+            }
             this.pushStack(callback);
         },
         pushStack: function (callback) {
+            callback.readyWait = this.readyWait;
             this[this.length] = callback;
             this.length += 1;
         }

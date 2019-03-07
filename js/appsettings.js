@@ -2,6 +2,7 @@
     //min: true,
     urlArgs: "r=" + (+new Date()),
     baseUrl: '/js',
+    waitSeconds: 7000,
     shim: {
         "v2.rsm": ['v2'],
         "v2.tool": ['v2']

@@ -36,106 +36,106 @@ var methods = {/* 全局方法 */
 
 };
 
-require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components/v2.input', 'components/v2.inputGroup'], function (Vue, button, buttonGroup, input, inputGroup) {/* 引用库、插件 */
-    button({
-        dropdown: true,
-        addClass: 'btn-primary',
-        events: {
-            click: 'click'
-        },
-        methods: {
-            click: function () {
-                console.log('click');
-            }
-        }
-    });
-    var input = require('components/v2.input');
-    var i = input({
-        '#template': 'input[type="time"][required]',
-        events: {
-            $click: 'click'
-        },
-        'date-min': function () {
-            var date = new Date();
-            return '{0}-{1}-{2} {3}:{4}:{5}'.format(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
-        },
-        'date-max': function () {
-            var date = new Date();
-            return '{0}-{1}-{2} {3}:{4}:{5}'.format(date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
-        },
-        inputChange: function (value) {
-            console.log(value);
-        },
-        methods: {
-            click: function () {
-                console.log('click');
-                this.reportValidity();
-            }
-        }
-    });
-    var i = input({
-        name: 'name',
-        type: 'radio',
-        events: {
-            $click: 'click'
-        },
-        inputChange: function (value) {
-            console.log(value);
-        },
-        methods: {
-            click: function () {
-                console.log('click');
-                this.reportValidity();
-            }
-        }
-    });
-    var i = input({
-        name: "name",
-        type: 'radio',
-        events: {
-            $click: 'click'
-        },
-        inputChange: function (value) {
-            console.log(value);
-        },
-        methods: {
-            click: function () {
-                console.log('click');
-                this.reportValidity();
-            }
-        }
-    });
-    var v = buttonGroup({
-        $: '#test-group',
-        data: [{
-            text: '确定',
-            width: 120,
-            addClass: 'btn-primary',
-            events: {
-                click: 'click'
-            }
-        }, {
-            //text: '确定',
-            //width: 120,
-            //disabled: true,
-            dropdown: true,
-            addClass: 'btn-primary',
-            data: [{
-                id: 1,
-                text: '测试'
-            }],
-            events: {
-                $click: function () {
-                    console.log(this.selectedIndex);
-                }
-            }
-        }],
-        methods: {
-            click: function () {
-                console.log('click');
-            }
-        }
-    });
+require(["vue", /*'components/v2.button', 'components/v2.buttonGroup', 'components/v2.input',*/ 'components/v2.inputGroup'], function (Vue, /*button, buttonGroup, input,*/ inputGroup) {/* 引用库、插件 */
+    //button({
+    //    dropdown: true,
+    //    addClass: 'btn-primary',
+    //    events: {
+    //        click: 'click'
+    //    },
+    //    methods: {
+    //        click: function () {
+    //            console.log('click');
+    //        }
+    //    }
+    //});
+    //var input = require('components/v2.input');
+    //var i = input({
+    //    '#template': 'input[type="time"][required]',
+    //    events: {
+    //        $click: 'click'
+    //    },
+    //    'date-min': function () {
+    //        var date = new Date();
+    //        return '{0}-{1}-{2} {3}:{4}:{5}'.format(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+    //    },
+    //    'date-max': function () {
+    //        var date = new Date();
+    //        return '{0}-{1}-{2} {3}:{4}:{5}'.format(date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+    //    },
+    //    inputChange: function (value) {
+    //        console.log(value);
+    //    },
+    //    methods: {
+    //        click: function () {
+    //            console.log('click');
+    //            this.reportValidity();
+    //        }
+    //    }
+    //});
+    //var i = input({
+    //    name: 'name',
+    //    type: 'radio',
+    //    events: {
+    //        $click: 'click'
+    //    },
+    //    inputChange: function (value) {
+    //        console.log(value);
+    //    },
+    //    methods: {
+    //        click: function () {
+    //            console.log('click');
+    //            this.reportValidity();
+    //        }
+    //    }
+    //});
+    //var i = input({
+    //    name: "name",
+    //    type: 'radio',
+    //    events: {
+    //        $click: 'click'
+    //    },
+    //    inputChange: function (value) {
+    //        console.log(value);
+    //    },
+    //    methods: {
+    //        click: function () {
+    //            console.log('click');
+    //            this.reportValidity();
+    //        }
+    //    }
+    //});
+    //var v = buttonGroup({
+    //    $: '#test-group',
+    //    data: [{
+    //        text: '确定',
+    //        width: 120,
+    //        addClass: 'btn-primary',
+    //        events: {
+    //            click: 'click'
+    //        }
+    //    }, {
+    //        //text: '确定',
+    //        //width: 120,
+    //        //disabled: true,
+    //        dropdown: true,
+    //        addClass: 'btn-primary',
+    //        data: [{
+    //            id: 1,
+    //            text: '测试'
+    //        }],
+    //        events: {
+    //            $click: function () {
+    //                console.log(this.selectedIndex);
+    //            }
+    //        }
+    //    }],
+    //    methods: {
+    //        click: function () {
+    //            console.log('click');
+    //        }
+    //    }
+    //});
     window.inputGroup = inputGroup({
         data: [{
             tag: 'button-group',
@@ -175,7 +175,7 @@ require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components
     });
     //loading({ sm: true });
 
-    alert('会员已过期！');
+    //alert('会员已过期！');
 
     var vm = new Vue({
 
