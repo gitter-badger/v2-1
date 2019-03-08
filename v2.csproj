@@ -81,7 +81,7 @@
     <Content Include="js\lib\vue\vue.min.js" />
     <Content Include="js\components\v2.button.js" />
     <Content Include="js\components\v2.buttonGroup.js" />
-    <Content Include="js\components\v2.select.js" />
+    <Content Include="js\components\v2.dropdown.js" />
     <Content Include="js\views\index.js" />
     <Content Include="link\lib\bootstrap\bootstrap.css" />
     <Content Include="link\lib\bootstrap\bootstrap.min.css" />

@@ -140,3 +140,17 @@ interface V2kitStatic {
      */
     date: Yep.DateStatic
 }
+
+interface Location {
+    /**
+     * 获取指定参数
+     * @param name 参数名称
+     * @param same 获取参数内容原型（默认会根据内容格式进行尝试解析，设置true时总是返回字符串）
+     */
+    take(name: string, same?: boolean): number | string | boolean | Array<any> | JSON;
+    /**
+     * 将参数转JSON
+     * @param same 获取参数内容原型（默认会根据内容格式进行尝试解析，设置true时总是返回字符串）
+     */
+    toJSON(same?: boolean): JSON;
+}

@@ -14,7 +14,7 @@
                 return factory(v2kit);
             } :
             factory(v2kit);
-}(function (v2) {
+}(function () {
     v2.use('form', {
         components: {
             select: function () {
@@ -44,9 +44,6 @@
             this.label = true;
             /** 证书 */
             this.withCredentials = true;
-
-            /** 只读字段使用静态标记 如：<p class="form-control-static">email@foxmail.com</p> */
-            this.readonly2static = true;
         },
         render: function () {
             this.base.render();
@@ -56,25 +53,53 @@
             if (this.horizontal) {
                 this.addClass('form-horizontal');
             }
+            this.build();
         },
-        ajax: function () {
-
-        },
-        resolve: function (data) {
-            var isArray = v2.isArraylike(data),
-                vfor = "form-" + this.identity,
-                html = '.form-group';
+        build: function () {
+            var html = '.form-group',
+                isArray = v2.isArraylike(this.rows);
             if (this.label) {
-                html += '>label.control-label[for="' + vfor + '-{name}"]{{title??name}}';
+                html += '>label.control-label[for="form-' + this.identity + '-{name}"]{{title??name}}';
             }
-            v2.each(data, function (option, index) {
+            v2.each(this.rows, this.stack(function (option, name) {
                 if (!isArray) {
-                    option.name = option.name || index;
+                    option.name = option.name || name;
                 }
                 option.$$ = this.append((this.label ? html.withCb(option) : html).htmlCoding())
                     .last();
                 return this.constructor(option.tag, option);
-            }, this);
+            }), this);
+        },
+        wait: function (toggle) {
+            if (this.__wait_ == null) {
+                this.__wait_ = this.constructor("wait", {
+                    sm: true
+                });
+            }
+            this.__wait_.toggle(!!toggle);
+        },
+        ajax: function () {
+            var _this = this,
+                ajax = {
+                    url: null,
+                    params: {}
+                };
+            if (!this.invoke("ajax-ready", ajax)) return;
+            this.wait(true);
+            ajax.url += (ajax.url.indexOf('?') === -1 ? '?' : '&') + v2.toQueryString(ajax.params);
+            return axios.get(ajax.url)
+                .then(function (response) {
+                    _this.wait(false);
+                    if (_this.invoke("ajax-success", response) === false) return false;
+                    _this.data = response.data;
+                })
+                .catch(function (error) {
+                    _this.wait(false);
+                    _this.invoke('ajax-error', error);
+                });
+        },
+        resolve: function (data) {
+
         }
     });
     return function (options) {

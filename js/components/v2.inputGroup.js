@@ -14,7 +14,7 @@
                 return factory(v2kit);
             } :
             factory(v2kit);
-}(function (v2) {
+}(function () {
     v2.use("input-group", {
         components: {
             input: function (resolve) {
@@ -34,10 +34,15 @@
             this.sm = false;
             /** 大按钮 */
             this.lg = false;
+            /** 控件名称 */
+            this.name = "";
+            /** 单体还是集合；单体时，返回值为对象（如：{checked:true,value:"1"});否则返回数组（如：[{name:"ck",value:"0",checked:true},{name:"input",value:"xxx"}])。 */
+            this.single = true;
         },
         render: function () {
             this.base.render();
             this.addClass('input-group');
+            this.name = this.name || this.tag + this.identity;
             if (this.lg || this.sm || this.xs) {
                 this.addClass(this.lg ? 'input-group-lg' : this.sm ? 'input-group-sm' : 'input-group-xs');
             }
@@ -47,27 +52,95 @@
             this.define({
                 value: {
                     set: function (value) {
-                        var i = 0, val, control;
-                        while (control = this.controls[i++]) {
-                            if (control.tag !== 'input') continue;
-                            val = value.shift();
-                            if ((control.type === 'checkbox' || control.type === 'radio') && typeof val === 'boolean') {
-                                control.checked = val;
-                                continue;
-                            }
-                            control.value = val + "";
+                        var i = 0, entry, control, type = v2.type(value);
+                        switch (type) {
+                            case 'array':
+                                if (this.single) {
+                                    while (value.length) {
+                                        entry = value.shift();
+                                        type = typeof entry === 'boolean';
+                                        while (control = this.controls[i++]) {
+                                            if (control.tag !== 'input') continue;
+                                            if (type && (control.type === 'checkbox' || control.type === 'radio')) {
+                                                control.checked = entry;
+                                            } else {
+                                                control.value = entry + "";
+                                            }
+                                            break;
+                                        }
+                                    }
+                                    break;
+                                }
+                                while (entry = value.shift()) {
+                                    while (control = this.controls[i++]) {
+                                        if (control.tag !== 'input') continue;
+                                        if (entry.name === control.name) {
+                                            control.value = entry.value;
+                                            if (control.type === 'checkbox' || control.type === 'radio') {
+                                                control.checked = entry.checked;
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+                                break;
+                            case 'object':
+                                if (this.single) {
+                                    while (control = this.controls[i++]) {
+                                        if (control.tag !== 'input') continue;
+                                        if (control.type === 'checkbox' || control.type === 'radio') {
+                                            control.checked = !!value.checked;
+                                        } else {
+                                            control.value = value.value + "";
+                                        }
+                                    }
+                                    break;
+                                }
+                                while (control = this.controls[i++]) {
+                                    if (control.tag !== 'input') continue;
+                                    entry = value[control.name];
+                                    if (entry == null) continue;
+                                    control.value = entry.value + "";
+                                    if (control.type === 'checkbox' || control.type === 'radio') {
+                                        control.checked = entry.checked;
+                                    }
+                                }
+                                break;
+                            default:
+                                while (control = this.controls[i++]) {
+                                    if (control.tag !== 'input') continue;
+                                    if (type === 'boolean' && (control.type === 'checkbox' || control.type === 'radio')) {
+                                        control.checked = value;
+                                    } else {
+                                        control.value = value + "";
+                                    }
+                                }
+                                break;
                         }
                     },
                     get: function () {
-                        var i = 0, control, obj, value = [];
+                        var i = 0, entry, value, control;
+                        if (this.single) {
+                            entry = {};
+                            while (control = this.controls[i++]) {
+                                if (control.tag !== 'input') continue;
+                                if (control.type === 'checkbox' || control.type === 'radio') {
+                                    entry.checked = control.checked;
+                                } else {
+                                    entry.value = control.value;
+                                }
+                            }
+                            return entry;
+                        }
+                        value = [];
                         while (control = this.controls[i++]) {
                             if (control.tag !== 'input') continue;
-                            value.push(obj = {
+                            value.push(entry = {
                                 name: control.name,
                                 value: control.value
                             });
                             if (control.type === 'checkbox' || control.type === 'radio') {
-                                obj.checked = control.checked;
+                                entry.checked = control.checked;
                             }
                         }
                         return value;

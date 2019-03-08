@@ -81,10 +81,8 @@
     var nameCache = v2.makeCache(function (name) {
         return new RegExp("(^|&|\\?)" + encodeURIComponent(name) + "=([^&#]*)(&|#|$)", "i");
     });
-    Location.prototype.take = function (name, same) {
-        var r = nameCache(name);
-        var v = r.exec(this.search);
-        if (!v || !(v = v[2])) return "";
+
+    function toJSON(v, same) {
         if (same) return v;
         if (rboolean.test(v)) {
             return v === "true" || v.toLowerCase() === "true";
@@ -101,6 +99,23 @@
             }
         }
         return v;
+    }
+
+    Location.prototype.take = function (name, same) {
+        var r = nameCache(name = decodeURIComponent(name));
+        var v = r.exec(this.search);
+        if (!v || !(v = v[2])) return "";
+        return toJSON(v, same);
+    };
+    Location.prototype.toJSON = function (same) {
+        var map = {};
+        if (!this.search) return map;
+        var k, i = 0, arr = this.search.split("&");
+        while (k = arr[i++]) {
+            k = k.split('=');
+            map[decodeURIComponent(k[0])] = toJSON(k.length > 2 ? core_slice.call(k, 1).join('=') : k[1], same);
+        }
+        return map;
     };
 
     v2.date = function (date) {

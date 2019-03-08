@@ -175,7 +175,7 @@ require(["vue", /*'components/v2.button', 'components/v2.buttonGroup', 'componen
     });
     //loading({ sm: true });
 
-    //alert('会员已过期！');
+    alert('会员已过期！');
 
     var vm = new Vue({
 

@@ -217,6 +217,17 @@
         }
     });
 
+    var wait;
+    window.layer = {
+        show: function () {
+            if (wait) return wait.show();
+            wait = v2('wait', { lg: true });
+        },
+        hide: function () {
+            if (wait) return wait.hide();
+        }
+    };
+
     window.alert = function (msg, title, okFn) {
         if (v2.isFunction(title)) {
             okFn = title;

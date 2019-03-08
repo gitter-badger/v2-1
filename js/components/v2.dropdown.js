@@ -15,8 +15,8 @@
             } :
             factory(v2kit);
 }(function (v2) {
-    v2.use("select", {
-        select: function () {
+    v2.use("dropdown", {
+        dropdown: function () {
             /** 涉及到的控件 */
             this.touch = null;
             /** 当前选中的元素 */
@@ -97,6 +97,6 @@
         }
     });
     return function (options) {
-        return v2('select', options);
+        return v2('dropdown', options);
     };
 }));

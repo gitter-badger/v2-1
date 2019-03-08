@@ -533,6 +533,7 @@
         readyWait: 0,
         readyComplete: 0,
         ready: function (master) {
+            master.sleep(true);
             stackCache[this.identity = master.identity] = this;
         },
         complete: function () {
@@ -548,6 +549,7 @@
                     this.readyWait > readyWait ||
                     callback.readyWait > this.readyComplete) return false;
             }
+            this.master.sleep(false);
             v2.deleteCb(stackCache, this.identity);
             return this.readyWait === 0;
         },
@@ -556,12 +558,13 @@
             if (this.readyComplete > 0) {
                 this.readyComplete -= 1;
             }
-            this.pushStack(callback);
+            return this.pushStack(callback);
         },
         pushStack: function (callback) {
             callback.readyWait = this.readyWait;
             this[this.length] = callback;
             this.length += 1;
+            return this;
         }
     };
 
@@ -647,16 +650,36 @@
             commit: 8
         },
         stack: function (callback) {
-            var _this = this;
-            return function () {
-                var context = this,
-                    args = core_slice.call(arguments),
-                    stack = stackCache[_this.identity];
-                if (!stack) return callback.apply(this, args);
-                stack.pushStack(function () {
-                    return callback.apply(context, args);
+            var i = 1,
+                stack,
+                rootArgs,
+                _this = this,
+                loop = arguments.length === 1;
+            if (typeof callback === 'boolean') {
+                loop = callback;
+                callback = arguments[i++];
+            }
+            rootArgs = core_slice.call(arguments, i);
+            if (loop) {
+                return function () {
+                    var context = this == null ? _this : this,
+                        args = core_slice.call(arguments),
+                        stack = stackCache[_this.identity];
+                    if (rootArgs.length > 0) {
+                        args = args.length > 0 ? rootArgs.concat(args) : rootArgs;
+                    }
+                    if (!stack) return callback.apply(context, args);
+                    stack.pushStack(function () {
+                        return callback.apply(context, args);
+                    });
+                };
+            }
+            if (stack = stackCache[this.identity]) {
+                return stack.pushStack(function () {
+                    return callback.apply(context, rootArgs);
                 });
-            };
+            }
+            return callback.apply(this, rootArgs);
         },
         define: function (name, extra, userDefined) {
             var my = this, contains, node = this.$core || this.$;
@@ -1062,39 +1085,43 @@
                 };
             }
             var timer, sleep = false, my = this, callbacks = [];
-            this.sleep = function (i) {
+            this.sleep = function (extra) {
                 if (arguments.length < 1) return sleep;
-                type = v2.type(i);
+                type = v2.type(extra);
                 if (type === "boolean") {
-                    i = ~~sleep + ~~i;
-                    sleep = !!(i - ~~sleep);
-                    i = !!(i - ~~sleep);
+                    extra = ~~sleep + ~~extra;
+                    sleep = !!(extra - ~~sleep);
+                    extra = !!(extra - ~~sleep);
 
-                    if (i && !sleep) {
-                        my.switchCase();
-                        while (i = callbacks.shift()) {
-                            i.call(my, my);
-                        }
+                    if (extra && !sleep) {
+                        my.stack(false, function () {
+                            my.switchCase();
+                            while (extra = callbacks.shift()) {
+                                extra.call(my, my);
+                            }
+                        });
                     }
-                    return i === sleep;
+                    return extra === sleep;
                 }
                 if (type === "function") {
                     if (sleep) {
-                        callbacks.push(i);
+                        callbacks.push(extra);
                     } else {
-                        i.call(my, my);
+                        my.stack(extra, my);
                     }
                 }
                 if (type === "number") {
                     sleep = true;
-                    clearTimeout(timer);
+                    if (timer) clearTimeout(timer);
                     timer = setTimeout(function () {
-                        sleep = false;
-                        my.switchCase();
-                        while (i = callbacks.shift()) {
-                            i.call(my, my);
-                        }
-                    }, i);
+                        timer = null;
+                        my.stack(sleep = false, function () {
+                            my.switchCase();
+                            while (extra = callbacks.shift()) {
+                                extra.call(my, my);
+                            }
+                        });
+                    }, extra);
                 }
                 return sleep;
             };

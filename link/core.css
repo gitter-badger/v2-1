@@ -1633,21 +1633,21 @@ td.show {
     width: 100px;
     background-repeat: no-repeat;
     background-position: center center;
-    background-image: url('components/img/wait-default.gif');
+    background-image: url('components/img/loading-default.gif');
 }
 
 .modal.modal-wait.modal-wait-xs .modal-dialog {
     height: 10px;
     width: 10px;
-    background-image: url('components/img/wait-xs.gif');
+    background-image: url('components/img/loading-xs.gif');
 }
 
 .modal.modal-wait.modal-wait-sm .modal-dialog {
     height: 50px;
     width: 50px;
-    background-image: url('components/img/wait-sm.gif');
+    background-image: url('components/img/loading-sm.gif');
 }
 
 .modal.modal-wait.modal-wait-lg .modal-dialog {
-    background-image: url('components/img/wait-lg.gif');
+    background-image: url('components/img/loading-lg.gif');
 }

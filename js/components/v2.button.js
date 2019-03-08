@@ -17,8 +17,8 @@
 }(function (v2) {
     var config = {
         components: {
-            select: function (resolve) {
-                return require(['components/v2.select'], resolve);
+            dropdown: function (resolve) {
+                return require(['components/v2.dropdown'], resolve);
             }
         },
         button: function () {
@@ -122,7 +122,7 @@
         },
         resolve: function (data) {
             if (this.dropdown) {
-                this.$sharp = this.constructor('select', { $$: this.$$, master: this.master, touch: this, data: data });
+                this.$sharp = this.constructor('dropdown', { $$: this.$$, master: this.master, touch: this, data: data });
             }
         }
     }));
