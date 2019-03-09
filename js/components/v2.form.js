@@ -64,6 +64,9 @@
             /** 请求方式 */
             this.method = "GET";
 
+            /** 表单 */
+            this.rows = null;
+
             /** 显示输入框名称 */
             this.label = true;
 
@@ -75,6 +78,7 @@
         },
         render: function () {
             this.base.render();
+            this.addClass('form');
             if (this.inline) {
                 this.addClass('form-inline');
             }
@@ -94,12 +98,12 @@
                 if (!isArray) {
                     row.name = row.name || name;
                 }
-                row.$$ = this.append((this.label ? html.withCb(option) : html).htmlCoding())
+                row.$$ = this.append((this.label ? html.compileCb(row) : html).htmlCoding())
                     .last();
                 if (row.group) {
                     this.group[row.name] = true;
                     return v2.each(row.group, function (option) {
-                        this.constructor(row.tag, v2.improve(true, { name: row.name }, option, row.option));
+                        this.constructor(row.tag, v2.improve(true, { $$: row.$$, name: row.name }, option, row.option));
                     }, this);
                 }
                 if (this.readonly2span && row.readonly) {
@@ -110,7 +114,7 @@
                         addClass: row.addClass
                     });
                 }
-                this.constructor(row.tag, option);
+                this.constructor(row.tag, row);
             }), this);
         },
         wait: function (toggle) {
@@ -127,7 +131,7 @@
                 get: function () {
                     var i = 0, control, value = {};
                     while (control = this.controls[i++]) {
-                        if (!(control.tag === 'input' || control.tag === 'select' || control.tag === 'form-static')) continue;
+                        if (!(control.tag === 'input' || control.tag === 'input-group' || control.tag === 'select' || control.tag === 'form-static')) continue;
                         if (control.type === 'checkbox' || control.type === 'radio') {
                             if (!control.checked) continue;
                         }
@@ -143,7 +147,7 @@
                 set: function (value) {
                     var i = 0, val, control;
                     while (control = this.controls[i++]) {
-                        if (!(control.tag === 'input' || control.tag === 'select' || control.tag === 'form-static')) continue;
+                        if (!(control.tag === 'input' || control.tag === 'input-group' ||control.tag === 'select' || control.tag === 'form-static')) continue;
                         val = value[control.name];
                         if (val == null) continue;
                         if (control.type === 'checkbox' || control.type === 'radio') {

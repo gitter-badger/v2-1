@@ -105,3 +105,13 @@
         color: #fff;
         background-color: transparent;
     }
+
+.form-horizontal .radio, .form-horizontal .checkbox, .form-horizontal .radio-inline, .form-horizontal .checkbox-inline {
+    padding-top: initial;
+}
+
+@media (min-width: 768px) {
+    .form-inline .radio input[type="radio"], .form-inline .checkbox input[type="checkbox"] {
+        position: absolute;
+    }
+}

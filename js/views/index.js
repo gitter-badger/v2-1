@@ -36,7 +36,7 @@ var methods = {/* 全局方法 */
 
 };
 
-require(["vue", /*'components/v2.button', 'components/v2.buttonGroup', 'components/v2.input',*/ 'components/v2.inputGroup'], function (Vue, /*button, buttonGroup, input,*/ inputGroup) {/* 引用库、插件 */
+require(["vue", /*'components/v2.button', 'components/v2.buttonGroup', 'components/v2.input',*/ 'components/v2.inputGroup', 'components/v2.pagingBar', 'components/v2.form'], function (Vue, /*button, buttonGroup, input,*/ inputGroup, pagingBar, from) {/* 引用库、插件 */
     //button({
     //    dropdown: true,
     //    addClass: 'btn-primary',
@@ -175,7 +175,87 @@ require(["vue", /*'components/v2.button', 'components/v2.buttonGroup', 'componen
     });
     //loading({ sm: true });
 
-    alert('会员已过期！');
+    pagingBar({ totalRows: 189 });
+
+    from({
+        rows: {
+            name1: {
+                tag: "input",
+                title: "测试"
+            },
+            name2: {
+                tag: 'input-group',
+                title: "按时",
+                data: [{
+                    tag: 'button-group',
+                    data: [{
+                        text: 'Action',
+                        addClass: 'btn-primary',
+                        events: {
+                            click: 'click'
+                        },
+                        methods: {
+                            click: function () {
+                                console.log('click');
+                            }
+                        }
+                    }, {
+                        dropdown: true,
+                        addClass: 'btn-primary',
+                        data: [{
+                            id: 1,
+                            text: '测试'
+                        }],
+                        events: {
+                            click: 'click'
+                        },
+                        methods: {
+                            click: function () {
+                                console.log('click');
+                            }
+                        }
+                    }]
+                }, {
+                    tag: 'input',
+                    type: 'checkbox'
+                }, {
+                    tag: 'input'
+                }]
+            },
+            name3: {
+                tag: 'input',
+                title: "性别",
+                group: [{
+                    type: 'radio',
+                    text: '男',
+                    value: 1
+                }, {
+                    type: 'radio',
+                    text: '女',
+                    value: 2
+                }, {
+                    type: 'radio',
+                    text: '未知',
+                    value: 3
+                }]
+            },
+            name4: {
+                tag: "button",
+                type: "submit",
+                text: "确定",
+                events: {
+                    '$click': function () {
+                        this.master.submit();
+                    }
+                }
+            }
+        },
+        'submit-ready': function (ajax) {
+            console.log(ajax);
+        }
+    });
+
+    //alert('会员已过期！');
 
     var vm = new Vue({
 

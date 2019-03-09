@@ -14,7 +14,7 @@
                 return factory(v2kit);
             } :
             factory(v2kit);
-}(function () {
+}(function (v2) {
     v2.use("paging-bar", {
         pagingBar: function () {
             /** 超小分页条 */
@@ -25,12 +25,12 @@
             this.lg = false;
             /** 循环（当在第一页点击上一页时，跳转到最后一页；当在最后一页点击下一页时，跳转到第一页。） */
             this.loop = true;
-            /** 当前页码（从0开始算） */
-            this.pageIndex = 0;
+            /** 当前页码（从1开始算） */
+            this.pageIndex = 1;
             /** 每页条数 */
             this.pageSize = 10;
             /** 数据总数 */
-            this.dataCount = 0;
+            this.totalRows = 0;
         },
         init: function () {
             this.base.init('ul');
@@ -43,8 +43,8 @@
             }
             this.empty()
                 .append('(li>a[href="#"][aria-label="Previous"]>span{«})+li>a[href="#"][aria-label="Next"]>span{»}'.htmlCoding());
-            this.$prev = this.take('[aria-label="Previous"]');
-            this.$next = this.take('[aria-label="Next"]');
+            this.$prev = this.first();
+            this.$next = this.last();
         },
         usb: function () {
             this.base.usb();
@@ -52,18 +52,18 @@
                 pageIndex: function (value) {
                     if (value === this.pageIndex) return;
                     this.pageIndex = value;
-                    this.totalPages = Math.ceil(this.dataCount / this.pageSize);
+                    this.totalPages = Math.ceil(this.totalRows / this.pageSize);
                     this.update(value, this.pageSize);
                 },
                 pageSize: function (value) {
                     if (value === this.pageSize) return;
                     this.pageSize = value;
-                    this.totalPages = Math.ceil(this.dataCount / this.pageSize);
+                    this.totalPages = Math.ceil(this.totalRows / this.pageSize);
                     this.update(this.pageIndex, value);
                 },
-                dataCount: function (value) {
-                    if (value === this.dataCount) return;
-                    this.totalPages = Math.ceil(this.dataCount / this.pageSize);
+                totalRows: function (value) {
+                    if (value === this.totalRows) return;
+                    this.totalPages = Math.ceil(this.totalRows / this.pageSize);
                     this.update(this.pageIndex, this.pageSize);
                 }
             }, true);
@@ -72,18 +72,19 @@
             var from, to, offset,
                 htmls = [],
                 index = this.pageIndex,
-                total = this.totalPages,
+                total = Math.ceil(this.totalRows / this.pageSize),
                 callback = function (i, len) {
                     for (; i <= len; i++) {
-                        htmls.push('li{0}[[aria-label="pagingbar"]>a[href="#"]>{{1}}'
+                        htmls.push('li{0}[aria-label="pagingbar"]>a[href="#"]{{1}}'
                             .format(index === i ? '.active' : '', i)
                             .htmlCoding());
                     }
                 };
 
-            if (this.pageTotal < 1) {
+            if (this.totalRows < 1) {
                 return this.addClass("hidden");
             }
+            this.totalPages = total;
 
             this.removeClass("hidden");
 
@@ -104,13 +105,13 @@
             callback(to + 1, total);
 
             this.when()
-                .then(function (elem) {
+                .when(function (elem) {
                     return v2.matches(elem, '[aria-label="pagingbar"]');
                 })
                 .done(function (elem) {
                     if (elem.parentNode) elem.parentNode.removeChild(elem);
                 });
-            this.beforeAt(this.$prev, htmls.join(''))
+            this.afterAt(this.$prev, htmls.join(''))
                 .toggleClassAt(this.$prev, 'disabled', this.loop ? this.totalPages === 1 : this.pageIndex === 1)
                 .toggleClassAt(this.$next, 'disabled', this.loop ? this.totalPages === 1 : this.totalPages === this.pageIndex);
         },
@@ -155,9 +156,33 @@
                 .done(function (elem) {
                     v2.addClass(elem, 'active');
                 });
+        },
+        prevPage: function () {
+            this.update(this.pageIndex - 1, this.pageSize);
+        },
+        nextPage: function () {
+            this.update(this.pageIndex + 1, this.pageSize);
+        },
+        resolve: function () {
+            this.build();
+        },
+        commit: function () {
+            var my = this;
+            this.base.commit();
+            this.on("click", '[aria-label="pagingbar"]:not(.disabled)', function () {
+                my.update(+v2.text(this), my.pageSize);
+                return false;
+            });
+            this.onAt(this.$prev, 'click', function () {
+                my.prevPage();
+                return false;
+            }).onAt(this.$next, 'click', function () {
+                my.nextPage();
+                return false;
+            });
         }
     });
     return function (options) {
-        return v2('select', options);
+        return v2('paging-bar', options);
     };
 }));

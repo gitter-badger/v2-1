@@ -549,8 +549,8 @@
                     this.readyWait > readyWait ||
                     callback.readyWait > this.readyComplete) return false;
             }
-            this.master.sleep(false);
             v2.deleteCb(stackCache, this.identity);
+            this.master.sleep(false);
             return this.readyWait === 0;
         },
         waitSatck: function (callback) {
@@ -686,7 +686,7 @@
             var my = this, contains, node = this.$core || this.$;
             if (v2.isPlainObject(name)) {
                 return v2.each(name, function (attributes, name) {
-                    my.define(name, attributes, userDefined);
+                    my.define(name, attributes, userDefined || extra);
                 }), this;
             }
             if (v2.isFunction(extra)) {
@@ -733,29 +733,25 @@
                         function () {
                             return node.getAttribute(name);
                         },
-                    set: contains ?
+                    set: (contains || userDefined) ?
                         function (value) {
                             node[name] = value;
                         } :
-                        userDefined ?
-                            function (value) {
-                                if (typeof value === 'boolean') {
-                                    if (value) {
-                                        node.setAttribute(name, name);
-                                    } else {
-                                        node.removeAttribute(name);
-                                    }
+                        function (value) {
+                            if (typeof value === 'boolean') {
+                                if (value) {
+                                    node.setAttribute(name, name);
                                 } else {
-                                    if (value == null) {
-                                        node.removeAttribute(name);
-                                    } else {
-                                        node.setAttribute(name, value + '');
-                                    }
+                                    node.removeAttribute(name);
                                 }
-                            } :
-                            function (value) {
-                                node.setAttribute(name, value + '');
+                            } else {
+                                if (value == null) {
+                                    node.removeAttribute(name);
+                                } else {
+                                    node.setAttribute(name, value + '');
+                                }
                             }
+                        }
                 };
                 v2.define(my, name, attributes);
             });
@@ -1203,6 +1199,7 @@
                     dir.add(this);
                 }
             }, this);
+            this.prop('owner', this);
             renderWildCard(this, 'function', variable);
         },
         commit: function () {
@@ -2944,8 +2941,8 @@
         v2.fn[name] = function () {
             return v2[name](this.$, arguments), this;
         };
-        v2.fn[name + 'At'] = function () {
-            return v2[name](arguments[0], core_slice.call(arguments, 1)), this;
+        v2.fn[name + 'At'] = function (elem) {
+            return v2[name](elem, core_slice.call(arguments, 1)), this;
         };
     });
     function access(vm, fn, key, value, elem, chainable, raw) {

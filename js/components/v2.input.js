@@ -199,6 +199,8 @@
 
             /** 标题 */
             this.title = '';
+            /** 内容（仅checkbox和radio） */
+            this.text = '';
             /** 名称 */
             this.name = "";
             /** 按钮类型 */
