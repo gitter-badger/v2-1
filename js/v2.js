@@ -621,6 +621,7 @@
                 component(function () {
                     if (stack.complete()) {
                         stack = null;
+                        callback = null;
                     }
                 });
             }
@@ -662,7 +663,7 @@
             rootArgs = core_slice.call(arguments, i);
             if (loop) {
                 return function () {
-                    var context = this == null ? _this : this,
+                    var context = this === undefined ? _this : this,
                         args = core_slice.call(arguments),
                         stack = stackCache[_this.identity];
                     if (rootArgs.length > 0) {
@@ -877,7 +878,7 @@
                 return this.$$ = context, this.$ = node;
             };
         },
-        build: function () {
+        compile: function () {
             var context = this;
             var fn,
                 tag,
@@ -1071,7 +1072,7 @@
         ready: function () {
             var type, render;
 
-            this.build();
+            this.compile();
 
 
             if (this.ajax && this.access) {

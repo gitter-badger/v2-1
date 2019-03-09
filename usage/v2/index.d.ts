@@ -72,8 +72,8 @@
          * @param option 基础配置入参。
          */
         baseConfigs(option: PlainObject): any;
-        /** 构件控件 */
-        build(): any;
+        /** 编译控件（属性继承和方法继承） */
+        compile(): any;
         /**
          * 执行方法
          * @param callback 回调函数

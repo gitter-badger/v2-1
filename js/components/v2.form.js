@@ -14,34 +14,62 @@
                 return factory(v2kit);
             } :
             factory(v2kit);
-}(function () {
+}(function (v2) {
+    var rparam = /delete|get|head/i;
+    v2.use('form-static', {
+        formStatic: function () {
+            this.name = "";
+            this.value = "";
+        },
+        init: function () {
+            this.base.init('p');
+        },
+        render: function () {
+            this.base.render();
+            this.addClass('form-control-static');
+        },
+        usb: function () {
+            this.base.usb();
+            this.define('value', function (value) {
+                this.empty()
+                    .append(document.createTextNode(value));
+            }, true);
+        }
+    });
     v2.use('form', {
         components: {
-            select: function () {
-                return require('components/v2.select');
+            select: function (resolve) {
+                return require(['components/v2.select'], resolve);
             },
-            input: function () {
-                return require('components/v2.input');
+            input: function (resolve) {
+                return require(['components/v2.input'], resolve);
             },
-            inputGroup: function () {
-                return require('components/v2.inputGroup');
+            inputGroup: function (resolve) {
+                return require(['components/v2.inputGroup'], resolve);
             },
-            button: function () {
-                return require('components/v2.button');
+            button: function (resolve) {
+                return require(['components/v2.button'], resolve);
             },
             buttonGroup: function () {
-                return require('components/v2.buttonGroup');
+                return require(['components/v2.buttonGroup'], resolve);
             }
         },
         form: function () {
             /** 为 主 元素添加 .form-inline 类可使其内容左对齐并且表现为 inline-block 级别的控件。 */
             this.inline = false;
+
             /** 为 主 元素添加 .form-inline 类, 水平布局 */
             this.horizontal = false;
+
             /** 请求方式 */
             this.method = "GET";
+
             /** 显示输入框名称 */
             this.label = true;
+
+            /** 只读内容文本显示 */
+            this.readonly2span = true;
+
             /** 证书 */
             this.withCredentials = true;
         },
@@ -61,13 +89,28 @@
             if (this.label) {
                 html += '>label.control-label[for="form-' + this.identity + '-{name}"]{{title??name}}';
             }
-            v2.each(this.rows, this.stack(function (option, name) {
+            this.group = {};
+            v2.each(this.rows, this.stack(function (row, name) {
                 if (!isArray) {
-                    option.name = option.name || name;
+                    row.name = row.name || name;
                 }
-                option.$$ = this.append((this.label ? html.withCb(option) : html).htmlCoding())
+                row.$$ = this.append((this.label ? html.withCb(option) : html).htmlCoding())
                     .last();
-                return this.constructor(option.tag, option);
+                if (row.group) {
+                    this.group[row.name] = true;
+                    return v2.each(row.group, function (option) {
+                        this.constructor(row.tag, v2.improve(true, { name: row.name }, option, row.option));
+                    }, this);
+                }
+                if (this.readonly2span && row.readonly) {
+                    return this.constructor('static', {
+                        $$: row.$$,
+                        name: row.name,
+                        value: row.value,
+                        addClass: row.addClass
+                    });
+                }
+                this.constructor(row.tag, option);
             }), this);
         },
         wait: function (toggle) {
@@ -78,6 +121,48 @@
             }
             this.__wait_.toggle(!!toggle);
         },
+        usb: function () {
+            this.base.usb();
+            this.define('value', {
+                get: function () {
+                    var i = 0, control, value = {};
+                    while (control = this.controls[i++]) {
+                        if (!(control.tag === 'input' || control.tag === 'select' || control.tag === 'form-static')) continue;
+                        if (control.type === 'checkbox' || control.type === 'radio') {
+                            if (!control.checked) continue;
+                        }
+                        if (this.group[control.name]) {
+                            value[control.name] = value[control.name] || [];
+                            value[control.name].push(control.value);
+                        } else {
+                            value[control.name] = control.value;
+                        }
+                    }
+                    return value;
+                },
+                set: function (value) {
+                    var i = 0, val, control;
+                    while (control = this.controls[i++]) {
+                        if (!(control.tag === 'input' || control.tag === 'select' || control.tag === 'form-static')) continue;
+                        val = value[control.name];
+                        if (val == null) continue;
+                        if (control.type === 'checkbox' || control.type === 'radio') {
+                            if (v2.isArray(val)) {
+                                v2.each(val, function (value) {
+                                    if (control.value == value) {
+                                        control.checked = true;
+                                    }
+                                });
+                                continue;
+                            }
+                            if (val || val === 0 || val === false) control.checked = control.value == val || !!val;
+                            continue;
+                        }
+                        control.value = val;
+                    }
+                }
+            });
+        },
         ajax: function () {
             var _this = this,
                 ajax = {
@@ -87,19 +172,43 @@
             if (!this.invoke("ajax-ready", ajax)) return;
             this.wait(true);
             ajax.url += (ajax.url.indexOf('?') === -1 ? '?' : '&') + v2.toQueryString(ajax.params);
-            return axios.get(ajax.url)
+            return axios.get(ajax.url, {
+                withCredentials: this.withCredentials
+            })
                 .then(function (response) {
                     _this.wait(false);
-                    if (_this.invoke("ajax-success", response) === false) return false;
-                    _this.data = response.data;
+                    _this.invoke("ajax-success", response.data, response);
                 })
                 .catch(function (error) {
                     _this.wait(false);
                     _this.invoke('ajax-error', error);
                 });
         },
-        resolve: function (data) {
-
+        submit: function () {
+            var _this = this,
+                ajax = {
+                    url: null,
+                    method: this.method,
+                    params: this.value
+                };
+            if (!this.invoke("submit-ready", ajax)) return;
+            this.wait(true);
+            if (rparam.test(ajax.method)) {
+                ajax.url += (ajax.url.indexOf('?') === -1 ? '?' : '&') + v2.toQueryString(ajax.params);
+                ajax.params = undefined;
+            }
+            return axios({
+                url: ajax.url,
+                method: ajax.method,
+                data: ajax.params,
+                withCredentials: this.withCredentials
+            }).then(function (response) {
+                _this.wait(false);
+                _this.invoke("submit-success", response.data, response);
+            }).catch(function (error) {
+                _this.wait(false);
+                _this.invoke('submit-error', error);
+            });
         }
     });
     return function (options) {

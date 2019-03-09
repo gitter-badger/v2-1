@@ -14,11 +14,14 @@
                 return factory(v2kit);
             } :
             factory(v2kit);
-}(function () {
+}(function (v2) {
     v2.use("input-group", {
         components: {
             input: function (resolve) {
                 return require(['components/v2.input'], resolve);
+            },
+            select: function (resolve) {
+                return require(['components/v2.select'], resolve);
             },
             button: function (resolve) {
                 return require(['components/v2.button'], resolve);
@@ -60,7 +63,7 @@
                                         entry = value.shift();
                                         type = typeof entry === 'boolean';
                                         while (control = this.controls[i++]) {
-                                            if (control.tag !== 'input') continue;
+                                            if (!(control.tag === 'input' || control.tag === 'select')) continue;
                                             if (type && (control.type === 'checkbox' || control.type === 'radio')) {
                                                 control.checked = entry;
                                             } else {
@@ -73,7 +76,7 @@
                                 }
                                 while (entry = value.shift()) {
                                     while (control = this.controls[i++]) {
-                                        if (control.tag !== 'input') continue;
+                                        if (!(control.tag === 'input' || control.tag === 'select')) continue;
                                         if (entry.name === control.name) {
                                             control.value = entry.value;
                                             if (control.type === 'checkbox' || control.type === 'radio') {
@@ -87,7 +90,7 @@
                             case 'object':
                                 if (this.single) {
                                     while (control = this.controls[i++]) {
-                                        if (control.tag !== 'input') continue;
+                                        if (!(control.tag === 'input' || control.tag === 'select')) continue;
                                         if (control.type === 'checkbox' || control.type === 'radio') {
                                             control.checked = !!value.checked;
                                         } else {
@@ -97,7 +100,7 @@
                                     break;
                                 }
                                 while (control = this.controls[i++]) {
-                                    if (control.tag !== 'input') continue;
+                                    if (!(control.tag === 'input' || control.tag === 'select')) continue;
                                     entry = value[control.name];
                                     if (entry == null) continue;
                                     control.value = entry.value + "";
@@ -108,7 +111,7 @@
                                 break;
                             default:
                                 while (control = this.controls[i++]) {
-                                    if (control.tag !== 'input') continue;
+                                    if (!(control.tag === 'input' || control.tag === 'select')) continue;
                                     if (type === 'boolean' && (control.type === 'checkbox' || control.type === 'radio')) {
                                         control.checked = value;
                                     } else {
@@ -123,7 +126,7 @@
                         if (this.single) {
                             entry = {};
                             while (control = this.controls[i++]) {
-                                if (control.tag !== 'input') continue;
+                                if (!(control.tag === 'input' || control.tag === 'select')) continue;
                                 if (control.type === 'checkbox' || control.type === 'radio') {
                                     entry.checked = control.checked;
                                 } else {
@@ -134,7 +137,7 @@
                         }
                         value = [];
                         while (control = this.controls[i++]) {
-                            if (control.tag !== 'input') continue;
+                            if (!(control.tag === 'input' || control.tag === 'select')) continue;
                             value.push(entry = {
                                 name: control.name,
                                 value: control.value

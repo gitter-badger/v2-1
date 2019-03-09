@@ -145,7 +145,11 @@
         add: function (control) {
             this[this.length] = control;
             this.length += 1;
-            var my = this;
+            var my = this, destory = control.destory;
+            control.destory = function (deep) {
+                my.remove(this);
+                return destory.call(this, deep);
+            };
             control.on('click', function () {
                 my.checked(control);
             });
@@ -314,13 +318,6 @@
                         .appendAt(this.$massage, document.createTextNode(text));
                 }, true);
             }
-        },
-        destroy: function () {
-            if (this.type === 'radio' && this.name) {
-                var radioGroup = radioCache(this.name);
-                radioGroup.remove(this);
-            }
-            this.base.destroy();
         },
         resolve: function () {
             if (this.type === 'date' || this.type === 'time' || this.type === 'datetime' || this.type === 'datetime-local') {

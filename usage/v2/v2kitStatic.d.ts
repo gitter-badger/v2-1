@@ -34,7 +34,7 @@ interface V2kitStatic {
      * @param object 对象
      * @param names 属性名称（多个名称时用空格分开）
      */
-    delete(object: any, names: string): any;	/**
+    deleteCb(object: any, names: string): any;	/**
      * 为对象定义属性
      * @param object 对象
      * @param value 属性集合
