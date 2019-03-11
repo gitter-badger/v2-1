@@ -203,7 +203,7 @@
                             if (val || val === 0 || val === false) control.checked = control.value == val || !!val;
                             continue;
                         }
-                        control.value = val === null ? '' : val;
+                        control.value = val == null ? '' : val;
                     }
                 }
             });
