@@ -7,7 +7,7 @@
  * @descript a valuable technology object.
  */
 (function ($, v2) {
-    function form(my) {
+    function form(vm) {
         var valueObject = {};
         return new Object({
             ctor: function () {
@@ -55,21 +55,21 @@
                         dataType: "json",
                         data: ajax.params,
                         success: function (json) {
-                            if (my.invoke("ajax-success", json) !== false) {
+                            if (vm.invoke("ajax-success", json) !== false) {
                                 if (json.status) {
-                                    my.invoke("ajax-load", json);
-                                    if (my.sleep(false)) {
-                                        my.load();
+                                    vm.invoke("ajax-load", json);
+                                    if (vm.sleep(false)) {
+                                        vm.load();
                                     }
                                 } else {
                                     v2.validate("<strong>错误&ensp;:</strong>&ensp;&ensp;" + json.message + "", "danger");
                                 }
                             }
-                            my.wait(false);
+                            vm.wait(false);
                         },
                         error: function (xhr) {
-                            my.invoke("ajax-error", xhr.status, xhr);
-                            my.wait(false);
+                            vm.invoke("ajax-error", xhr.status, xhr);
+                            vm.wait(false);
                         }
                     });
                 }
@@ -141,18 +141,18 @@
                     data: ajax.type.toUpperCase() === "GET" ? ajax.params : JSON.stringify(ajax.params),
                     contentType: 'application/json;charset=UTF-8',
                     success: function (json) {
-                        if (my.invoke("submit-success", json) !== false) {
+                        if (vm.invoke("submit-success", json) !== false) {
                             if (json.status) {
-                                my.invoke("submit-load", json);
+                                vm.invoke("submit-load", json);
                             } else {
                                 v2.validate("<strong>错误&ensp;:</strong>&ensp;&ensp;" + json.message + "", "danger");
                             }
                         }
-                        my.wait(false);
+                        vm.wait(false);
                     },
                     error: function (xhr) {
-                        my.invoke("submit-error", xhr.status, xhr);
-                        my.wait(false);
+                        vm.invoke("submit-error", xhr.status, xhr);
+                        vm.wait(false);
                     }
                 });
             },
@@ -162,10 +162,10 @@
             resolve: function () {
                 var jq, context, control, html = '<div class="form-group"><label for="form-{field}">{title}：</label></div>';
                 v2.each(this.rows = this.rows || [], function (row) {
-                    my.$.append((row.type === "checkbox" || row.type === "radio")
+                    vm.$.append((row.type === "checkbox" || row.type === "radio")
                         ? v2.format('<div class="form-group"><label>{0}：</label></div>', row.title)
                         : v2.replace(html, row));
-                    context = jq ? jq = jq.next() : jq = my.$.children().eq(-1);
+                    context = jq ? jq = jq.next() : jq = vm.$.children().eq(-1);
                     row.options = v2.extend(row.options, {
                         id: "form-" + row.field,
                         name: row.field,
@@ -219,21 +219,21 @@
                 v2.each(v2.makeArray(this.buttons), function (button) {
                     if (button.type === "submit") {
                         var submit = button.click;
-                        button.click = my.proxy(my, submit ? function () {
+                        button.click = vm.proxy(vm, submit ? function () {
                             debugger;
                             if (submit.apply(this, arguments) !== false) {
-                                my.submit();
+                                vm.submit();
                             }
-                        } : my.submit);
+                        } : vm.submit);
                     }
                     if (button.type === "reset") {
                         var reset = button.click;
-                        button.click = my.proxy(my, reset ? function () {
+                        button.click = vm.proxy(vm, reset ? function () {
                             debugger;
                             if (reset.apply(this, arguments) !== false) {
-                                my.reset();
+                                vm.reset();
                             }
-                        } : my.reset);
+                        } : vm.reset);
                     }
                     return v2("button", v2.extend(button, { context: context }));
                 });
@@ -244,7 +244,7 @@
                 this.$.on("keyup", function (e) {
                     var code = e.keyCode || e.which;
                     if (code === 13 || code === 108) {
-                        if (my.submitEnter) my.submit();
+                        if (vm.submitEnter) vm.submit();
                     }
                 });
             }

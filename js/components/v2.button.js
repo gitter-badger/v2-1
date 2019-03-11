@@ -38,11 +38,12 @@
             this.dropdown = false;
         },
         commit: function () {
+            var vm = this;
             this.base.commit();
             this.on("keyup", function (e) {
                 var code = e.keyCode || e.which;
                 if (code === 13 || code === 108) {
-                    my.invoke("keyboard-enter");
+                    vm.invoke("keyboard-enter");
                 }
             });
         }

@@ -654,7 +654,7 @@
             var i = 1,
                 stack,
                 rootArgs,
-                _this = this,
+                vm = this,
                 loop = arguments.length === 1;
             if (typeof callback === 'boolean') {
                 loop = callback;
@@ -663,9 +663,9 @@
             rootArgs = core_slice.call(arguments, i);
             if (loop) {
                 return function () {
-                    var context = this === undefined ? _this : this,
+                    var context = this === undefined ? vm : this,
                         args = core_slice.call(arguments),
-                        stack = stackCache[_this.identity];
+                        stack = stackCache[vm.identity];
                     if (rootArgs.length > 0) {
                         args = args.length > 0 ? rootArgs.concat(args) : rootArgs;
                     }
@@ -683,10 +683,10 @@
             return callback.apply(this, rootArgs);
         },
         define: function (name, extra, userDefined) {
-            var my = this, contains, node = this.$core || this.$;
+            var vm = this, contains, node = this.$core || this.$;
             if (v2.isPlainObject(name)) {
                 return v2.each(name, function (attributes, name) {
-                    my.define(name, attributes, userDefined || extra);
+                    vm.define(name, attributes, userDefined || extra);
                 }), this;
             }
             if (v2.isFunction(extra)) {
@@ -708,7 +708,7 @@
                                 } else {
                                     node.removeAttribute(name);
                                 }
-                                extra.call(my, value);
+                                extra.call(vm, value);
                             } else {
                                 if (value == null) {
                                     node.removeAttribute(name);
@@ -753,7 +753,7 @@
                             }
                         }
                 };
-                v2.define(my, name, attributes);
+                v2.define(vm, name, attributes);
             });
             return this;
         },
@@ -1050,13 +1050,13 @@
                 previousSibling: {
                     get: function () {
                         if (this.master == null) return null;
-                        return this.master.controls.offset(my, -1);
+                        return this.master.controls.offset(vm, -1);
                     }
                 },
                 nextSibling: {
                     get: function () {
                         if (this.master == null) return null;
-                        return this.master.controls.offset(my, 1);
+                        return this.master.controls.offset(vm, 1);
                     }
                 }
             });
@@ -1081,7 +1081,7 @@
                     return value;
                 };
             }
-            var timer, sleep = false, my = this, callbacks = [];
+            var timer, sleep = false, vm = this, callbacks = [];
             this.sleep = function (extra) {
                 if (arguments.length < 1) return sleep;
                 type = v2.type(extra);
@@ -1091,10 +1091,10 @@
                     extra = !!(extra - ~~sleep);
 
                     if (extra && !sleep) {
-                        my.stack(false, function () {
-                            my.switchCase();
+                        vm.stack(false, function () {
+                            vm.switchCase();
                             while (extra = callbacks.shift()) {
-                                extra.call(my, my);
+                                extra.call(vm, vm);
                             }
                         });
                     }
@@ -1104,7 +1104,7 @@
                     if (sleep) {
                         callbacks.push(extra);
                     } else {
-                        my.stack(extra, my);
+                        vm.stack(extra, vm);
                     }
                 }
                 if (type === "number") {
@@ -1112,10 +1112,10 @@
                     if (timer) clearTimeout(timer);
                     timer = setTimeout(function () {
                         timer = null;
-                        my.stack(sleep = false, function () {
-                            my.switchCase();
+                        vm.stack(sleep = false, function () {
+                            vm.switchCase();
                             while (extra = callbacks.shift()) {
-                                extra.call(my, my);
+                                extra.call(vm, vm);
                             }
                         });
                     }, extra);
@@ -1126,7 +1126,7 @@
             this.switchCase();
         },
         usb: function () {
-            var my = this, visible,
+            var vm = this, visible,
                 nodeName = this.$.nodeName.toLowerCase(),
                 display = nodeName === 'table' ?
                     'table' :
@@ -1183,11 +1183,11 @@
                 set: function (value) {
                     if (visible === value) return;
                     if (visible = !!value) {
-                        if (my.show() !== false)
-                            my.css('display', display);
+                        if (vm.show() !== false)
+                            vm.css('display', display);
                     } else {
-                        if (my.hide() !== false)
-                            my.css('display', 'none');
+                        if (vm.hide() !== false)
+                            vm.css('display', 'none');
                     }
                 }
             }, true);

@@ -166,7 +166,7 @@
                 this.$regionContent = this.$region.find("ul");
                 this.$containerContent = this.$.find(".container").children();
             },
-            ajax: function (my) {
+            ajax: function (vm) {
                 this.data = {
                     keyboard: [{
                         text: "系统设置",
@@ -254,7 +254,7 @@
                     }
                 });
                 //搜索
-                var my = this;
+                var vm = this;
                 var scope = null;
                 var data = this.data || {};
                 var data_navbar = data.navbar || [];
@@ -320,7 +320,7 @@
                     context_thumbnail = navbar_context.find(".lyt-navbar-thumbnail a");
                 context = context.add(context_thumbnail);
                 $(".lyt-tabbar").on("click", ".halflings-remove", function (e) {
-                    my.remove($(this).parent().attr("href"));
+                    vm.remove($(this).parent().attr("href"));
                     return false;
                 });
                 var elem = this.$region.first();
@@ -352,7 +352,7 @@
                             .each(function (i) {
                                 jq = context.eq(i);
                                 if (isEquals(jq.attr("href"), hash)) {
-                                    my.push({
+                                    vm.push({
                                         text: jq.text(),
                                         active: true,
                                         showRemove: true,
@@ -369,16 +369,16 @@
                                     .siblings().removeClass("active");
                             }
                         });
-                        my.$.find(".lyt-tabbar a")
+                        vm.$.find(".lyt-tabbar a")
                             .removeClass("active")
                             .each(function () {
                                 jq = $(this);
                                 if (isEquals(jq.attr("href"), hash)) {
                                     jq.addClass("active");
-                                    if (my.stack) {
-                                        my.$containerContent.find('[data-domain="' + hash + '"]').removeClass("hidden").siblings().addClass("hidden");
+                                    if (vm.stack) {
+                                        vm.$containerContent.find('[data-domain="' + hash + '"]').removeClass("hidden").siblings().addClass("hidden");
                                     } else {
-                                        my.$containerContent.children().children().attr("src", hash.slice(1) + ".html");
+                                        vm.$containerContent.children().children().attr("src", hash.slice(1) + ".html");
                                     }
                                 }
                             });

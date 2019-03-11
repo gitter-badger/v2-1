@@ -7,7 +7,7 @@
  * @descript a valuable technology object.
  */
 (function ($, v2) {
-    function inputSearch(my) {
+    function inputSearch(vm) {
         return new Object({
             ctor: function () {
                 this.timely = false;//实时的
@@ -52,17 +52,17 @@
                         dataType: "json",
                         data: ajax.params,
                         success: function (json) {
-                            if (my.invoke("ajax-success", json) !== false) {
+                            if (vm.invoke("ajax-success", json) !== false) {
                                 if (json.status) {
-                                    my.invoke("ajax-load", json);
-                                    if (my.sleep(false)) {
-                                        my.load();
+                                    vm.invoke("ajax-load", json);
+                                    if (vm.sleep(false)) {
+                                        vm.load();
                                     }
                                 }
                             }
                         },
                         error: function (xhr) {
-                            my.invoke("ajax-error", xhr.status, xhr);
+                            vm.invoke("ajax-error", xhr.status, xhr);
                         }
                     });
                 }
@@ -105,27 +105,27 @@
                 }
             },
             commit: function () {
-                var my = this;
+                var vm = this;
                 this.base.commit();
                 this.$.on("click", '[data-submit="ajax"]', function () {
-                    if (my.isValid()) {
-                        my.$dropdown.empty();
-                        my.ajax();
+                    if (vm.isValid()) {
+                        vm.$dropdown.empty();
+                        vm.ajax();
                     }
                 });
                 this.$input.on("click", function () {
-                    if (my.data && my.data.length) {
-                        my.$dropdown.addClass("show");
+                    if (vm.data && vm.data.length) {
+                        vm.$dropdown.addClass("show");
                     }
                 });
                 this.$.on("keydown", function (e) {
                     var code = e.keyCode || e.which;
                     if (code === 27) {
-                        my.$dropdown.removeClass("show");
+                        vm.$dropdown.removeClass("show");
                     }
-                    if (my.data && my.data.length) {
+                    if (vm.data && vm.data.length) {
                         if (code === 38 || code === 40) {
-                            var context = my.$dropdown.children();
+                            var context = vm.$dropdown.children();
                             var jq = context.filter(".active");
                             if (code === 40) {
                                 jq = jq.next().add(context.eq(0)).eq(-1);
@@ -139,13 +139,13 @@
                 });
                 this.$dropdown.on("click", '[data-key]', function () {
                     var jq = $(this);
-                    my.val(jq.attr("data-key"), jq.text());
+                    vm.val(jq.attr("data-key"), jq.text());
                     jq.addClass("active").siblings().removeClass("active");
-                    my.$dropdown.removeClass("show");
+                    vm.$dropdown.removeClass("show");
                 });
                 $(document).on("click", function (e) {
-                    if (!v2.contains(my.element, e.target)) {
-                        my.$dropdown.removeClass("show");
+                    if (!v2.contains(vm.element, e.target)) {
+                        vm.$dropdown.removeClass("show");
                     }
                 });
             }

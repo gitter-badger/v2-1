@@ -238,16 +238,6 @@ require(["vue", /*'components/v2.button', 'components/v2.buttonGroup', 'componen
                     text: '未知',
                     value: 3
                 }]
-            },
-            name4: {
-                tag: "button",
-                type: "submit",
-                text: "确定",
-                events: {
-                    '$click': function () {
-                        this.master.submit();
-                    }
-                }
             }
         },
         'submit-ready': function (ajax) {

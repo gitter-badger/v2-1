@@ -38,6 +38,9 @@
     });
     v2.use('form', {
         components: {
+            wait: function (resolve) {
+                return require(['components/v2.modal'], resolve);
+            },
             select: function (resolve) {
                 return require(['components/v2.select'], resolve);
             },
@@ -75,8 +78,21 @@
 
             /** 证书 */
             this.withCredentials = true;
+
+            /** 显示提交按钮 */
+            this.showSubmit = true;
+
+            /** 显示重置按钮 */
+            this.showReset = false;
+
+            /** 按钮布局 */
+            this.buttonLayout = 'text-center';//{text-[left|center|right]}
+
+            /** 按钮组 */
+            this.buttons = [];
         },
         render: function () {
+            var vm = this;
             this.base.render();
             this.addClass('form');
             if (this.inline) {
@@ -85,6 +101,30 @@
             if (this.horizontal) {
                 this.addClass('form-horizontal');
             }
+            if (this.showSubmit) {
+                this.buttons.push({
+                    text: "提交",
+                    type: 'submit',
+                    events: {
+                        click: function () {
+                            vm.submit();
+                        }
+                    }
+                });
+            }
+
+            if (this.showReset) {
+                this.buttons.push({
+                    text: "重置",
+                    type: 'reset',
+                    events: {
+                        click: function () {
+                            vm.reset();
+                        }
+                    }
+                });
+            }
+
             this.build();
         },
         build: function () {
@@ -127,7 +167,7 @@
         },
         usb: function () {
             this.base.usb();
-            this.define('value', {
+            this.define('data', {
                 get: function () {
                     var i = 0, control, value = {};
                     while (control = this.controls[i++]) {
@@ -145,11 +185,11 @@
                     return value;
                 },
                 set: function (value) {
+                    value = value || {};
                     var i = 0, val, control;
                     while (control = this.controls[i++]) {
-                        if (!(control.tag === 'input' || control.tag === 'input-group' ||control.tag === 'select' || control.tag === 'form-static')) continue;
+                        if (!(control.tag === 'input' || control.tag === 'input-group' || control.tag === 'select' || control.tag === 'form-static')) continue;
                         val = value[control.name];
-                        if (val == null) continue;
                         if (control.type === 'checkbox' || control.type === 'radio') {
                             if (v2.isArray(val)) {
                                 v2.each(val, function (value) {
@@ -159,16 +199,17 @@
                                 });
                                 continue;
                             }
+                            if (val === null) val = control.defaultChecked;
                             if (val || val === 0 || val === false) control.checked = control.value == val || !!val;
                             continue;
                         }
-                        control.value = val;
+                        control.value = val === null ? '' : val;
                     }
                 }
             });
         },
         ajax: function () {
-            var _this = this,
+            var vm = this,
                 ajax = {
                     url: null,
                     params: {}
@@ -180,20 +221,35 @@
                 withCredentials: this.withCredentials
             })
                 .then(function (response) {
-                    _this.wait(false);
-                    _this.invoke("ajax-success", response.data, response);
+                    vm.wait(false);
+                    vm.invoke("ajax-success", response.data, response);
                 })
                 .catch(function (error) {
-                    _this.wait(false);
-                    _this.invoke('ajax-error', error);
+                    vm.wait(false);
+                    vm.invoke('ajax-error', error);
                 });
         },
+        resolve: function (data) {
+            this.__data_ = data || {};
+            var buttons = this.buttons;
+            if (!buttons || !buttons.length) return;
+            var elem = this.append('.form-group'.htmlCoding()).last();
+            if (this.buttonLayout) {
+                this.addClassAt(elem, this.buttonLayout);
+            }
+            v2.each(buttons, this.stack(function (option) {
+                this.constructor(option.tag || 'button', v2.extend({ $$: elem }, option));
+            }), this);
+        },
+        reset: function () {
+            this.data = this.__data_;
+        },
         submit: function () {
-            var _this = this,
+            var vm = this,
                 ajax = {
                     url: null,
                     method: this.method,
-                    params: this.value
+                    params: this.data
                 };
             if (!this.invoke("submit-ready", ajax)) return;
             this.wait(true);
@@ -207,11 +263,11 @@
                 data: ajax.params,
                 withCredentials: this.withCredentials
             }).then(function (response) {
-                _this.wait(false);
-                _this.invoke("submit-success", response.data, response);
+                vm.wait(false);
+                vm.invoke("submit-success", response.data, response);
             }).catch(function (error) {
-                _this.wait(false);
-                _this.invoke('submit-error', error);
+                vm.wait(false);
+                vm.invoke('submit-error', error);
             });
         }
     });

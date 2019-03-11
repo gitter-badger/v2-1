@@ -79,20 +79,20 @@
             return false;
         },
         commit: function () {
-            var my = this;
+            var vm = this;
             this.base.commit();
             this.on('click', '[data-index]:not(.disabled)', function () {
-                my.selectedIndex = +v2.attr(this, 'data-index');
+                vm.selectedIndex = +v2.attr(this, 'data-index');
             });
             this.master.on('click', this.touch, function () {
-                my.toggle();
+                vm.toggle();
             });
             var touch = this.touch ? this.touch.$ || this.touch : this.master.$,
                 isString = v2.isString(touch);
             v2.on(document, 'click', function (e) {
                 var elem = e.target || e.srcElement;
                 if (isString ? v2.matches(elem, touch) || v2.take(touch, elem) : elem === touch || v2.contains(touch, elem)) return;
-                my.hide();
+                vm.hide();
             });
         }
     });

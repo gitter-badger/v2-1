@@ -1,5 +1,5 @@
 ﻿(function ($, v2) {
-    function select(my) {
+    function select(vm) {
         return new Object({
             ctor: function () {
                 //this.dropup = false;//是否向上打开
@@ -49,21 +49,21 @@
                         dataType: "json",
                         data: ajax.params,
                         success: function (json) {
-                            if (my.invoke("ajax-success", json) !== false) {
+                            if (vm.invoke("ajax-success", json) !== false) {
                                 if (json.status) {
-                                    my.invoke("ajax-load", json);
-                                    if (my.sleep(false)) {
-                                        my.load();
+                                    vm.invoke("ajax-load", json);
+                                    if (vm.sleep(false)) {
+                                        vm.load();
                                     }
                                 } else {
                                     v2.validate("<strong>错误&ensp;:</strong>&ensp;&ensp;" + json.message + "", "danger");
                                 }
                             }
-                            my.wait(false);
+                            vm.wait(false);
                         },
                         error: function (xhr) {
-                            my.invoke("ajax-error", xhr.status, xhr);
-                            my.wait(false);
+                            vm.invoke("ajax-error", xhr.status, xhr);
+                            vm.wait(false);
                         }
                     });
                 }
@@ -79,18 +79,18 @@
             },
             commit: function () {
                 $(document).on("click", function (e) {
-                    if (!e.target || !v2.contains(my.$.get(0), e.target)) {
-                        my.$.removeClass("open");
+                    if (!e.target || !v2.contains(vm.$.get(0), e.target)) {
+                        vm.$.removeClass("open");
                     }
                 });
                 this.$.find('[data-toggle="dropdown"]').click(function () {
-                    my.$.toggleClass("open");
+                    vm.$.toggleClass("open");
                 });
                 this.$dropdown.on("click", '[data-key]', function () {
                     var jq = $(this);
-                    my.$.removeClass("open");
-                    my.key = jq.attr('data-key');
-                    my.$domain.text(my.value = jq.text());
+                    vm.$.removeClass("open");
+                    vm.key = jq.attr('data-key');
+                    vm.$domain.text(vm.value = jq.text());
                     jq.addClass("active").siblings().removeClass("active");
                 });
             }

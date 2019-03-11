@@ -24,7 +24,7 @@
         core_width = Math.max(docElem.offsetWidth, docElem.clientWidth);
         core_height = Math.max(docElem.offsetHeight, docElem.clientHeight);
     });
-    function dialog(my, variable) {
+    function dialog(vm, variable) {
         var responsive = true;
         return new Object({
             isClose: true,
@@ -121,7 +121,7 @@
                                     callback = function () {
                                         if (responsive) {
                                             context_all.css(initObj);
-                                            my.$container.height(Math.max(context_body.height(), context.height()));
+                                            vm.$container.height(Math.max(context_body.height(), context.height()));
                                             context_all.css(fixObj);
                                         }
                                     };
@@ -222,43 +222,43 @@
             },
             commit: function () {
                 this.$.click(function (e) {
-                    if (e.target === my.element) {
-                        my.close();
+                    if (e.target === vm.element) {
+                        vm.close();
                     }
                 });
 
                 if (variable.backdrop && variable.backhidden) {
                     this.$backdrop.click(function () {
-                        my.close();
+                        vm.close();
                     });
                 }
 
                 this.$context.keyup(function (e) {
                     if (e.keyCode == 27 || e.keyCode == 96) {
-                        my.close();
+                        vm.close();
                     }
                 });
 
                 var fix_screen = function () {
                     var height = core_height;
                     if (variable.header) {
-                        height -= my.$header.outerHeight();
+                        height -= vm.$header.outerHeight();
                     }
                     if (variable.footer) {
-                        my.$footer.each(function (i) {
-                            height -= Math.max(0, my.$footer.eq(i).outerHeight());
+                        vm.$footer.each(function (i) {
+                            height -= Math.max(0, vm.$footer.eq(i).outerHeight());
                         });
                     }
-                    my.$.css({
+                    vm.$.css({
                         "max-width": core_width,
                         "max-height": core_height
                     });
-                    my.$container.css("max-height", height - 20);
+                    vm.$container.css("max-height", height - 20);
                 };
                 $(window).resize(fix_screen() || fix_screen);
 
                 this.$.on("click", '[data-invoke]', function (e) {
-                    my.invoke($(this).attr("data-invoke"));
+                    vm.invoke($(this).attr("data-invoke"));
                 });
             }
         });
@@ -343,9 +343,9 @@
         commit: function () {
             this.base.commit();
             if (this.variable.timeout > 0) {
-                var my = this;
+                var vm = this;
                 setTimeout(function () {
-                    my.close();
+                    vm.close();
                 }, ~~this.variable.timeout);
             }
         }

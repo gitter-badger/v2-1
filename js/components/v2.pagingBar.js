@@ -167,17 +167,17 @@
             this.build();
         },
         commit: function () {
-            var my = this;
+            var vm = this;
             this.base.commit();
             this.on("click", '[aria-label="pagingbar"]:not(.disabled)', function () {
-                my.update(+v2.text(this), my.pageSize);
+                vm.update(+v2.text(this), vm.pageSize);
                 return false;
             });
             this.onAt(this.$prev, 'click', function () {
-                my.prevPage();
+                vm.prevPage();
                 return false;
             }).onAt(this.$next, 'click', function () {
-                my.nextPage();
+                vm.nextPage();
                 return false;
             });
         }

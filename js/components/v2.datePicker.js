@@ -198,11 +198,11 @@
             y < (0 | this.mins[0]) && (y = 0 | this.mins[0]);
             y > (0 | this.maxs[0]) && (y = 0 | this.maxs[0]);
 
-            var my = this, g = new Date(y, m, d), gb = {};
+            var vm = this, g = new Date(y, m, d), gb = {};
 
-            my.ymd = [g.getFullYear(), g.getMonth(), g.getDate()];
+            vm.ymd = [g.getFullYear(), g.getMonth(), g.getDate()];
 
-            g.setFullYear(my.ymd[0], my.ymd[1], 1);
+            g.setFullYear(vm.ymd[0], vm.ymd[1], 1);
 
             gb.FDay = g.getDay();
             gb.PDays = dayCount(y, m);
@@ -213,7 +213,7 @@
             this.valid = true;
 
             this.$days.then(function (n, i) {
-                var y = my.ymd[0], m = my.ymd[1] + 1, d;
+                var y = vm.ymd[0], m = vm.ymd[1] + 1, d;
                 if (i < gb.FDay) {
                     n.className = 'non-month';
                     n.innerHTML = d = gb.PDay + i;
@@ -225,7 +225,7 @@
                     }
                 } else if ((gb.FDay + gb.NDays) > i) {
                     n.innerHTML = d = i - gb.FDay + 1;
-                    n.className = d === my.ymd[2] ? 'active' : '';
+                    n.className = d === vm.ymd[2] ? 'active' : '';
                 } else {
                     n.className = 'non-month';
                     n.innerHTML = d = gb.NDay++;
@@ -236,9 +236,9 @@
                         m += 1;
                     }
                 }
-                if (my.checkVoid(y, m, d)) {
-                    if (my.ymd[1] + 1 === m && d === my.ymd[2]) {
-                        my.valid = false;
+                if (vm.checkVoid(y, m, d)) {
+                    if (vm.ymd[1] + 1 === m && d === vm.ymd[2]) {
+                        vm.valid = false;
                     }
                     v2.addClass(n, 'date-void');
                 }
@@ -286,11 +286,11 @@
             return false;
         },
         monthPicker: function (m) {
-            var my = this;
+            var vm = this;
             this.hidePicker()
                 .removeClassAt(this.$monthPicker, 'hidden');
             this.$months.then(function (span, i) {
-                if (my.checkVoid(my.ymd[0], i + 1)) {
+                if (vm.checkVoid(vm.ymd[0], i + 1)) {
                     span.className = 'date-void';
                 } else {
                     span.className = m === i ? 'active' : '';
@@ -298,12 +298,12 @@
             });
         },
         yearPicker: function (y) {
-            var my = this, year = my.ymd[0];
+            var vm = this, year = vm.ymd[0];
             this.hidePicker()
                 .removeClassAt(this.$yearPicker, 'hidden');
             this.$years.then(function (li, i) {
                 i = i === 7 ? y : y - 7 + i;
-                if (my.mins[0] > i || i > my.maxs[0]) {
+                if (vm.mins[0] > i || i > vm.maxs[0]) {
                     li.className = 'date-void';
                 } else {
                     li.className = i === year ? 'active' : '';
@@ -392,7 +392,7 @@
             return docEl[a ? "clientWidth" : "clientHeight"];
         },
         tip: function (msg, title) {
-            var my = this, html = v2.htmlSerialize('(.date-hsmtex{' + (title || "提示") + '}>span[aria-close]{×})+p{' + msg + '}');
+            var vm = this, html = v2.htmlSerialize('(.date-hsmtex{' + (title || "提示") + '}>span[aria-close]{×})+p{' + msg + '}');
             this.hidePicker()
                 .emptyAt(this.$timePicker)
                 .appendAt(this.$timePicker, html)
@@ -404,7 +404,7 @@
             }
             this.tipTimer = setTimeout(function () {
                 this.tipTimer = 0;
-                my.hidePicker();
+                vm.hidePicker();
             }, 1200);
         },
         resolve: function () {
@@ -425,39 +425,39 @@
                 });
         },
         commit: function () {
-            var my = this, valueSet = function (y, M, d, h, m, s) {
-                my.value = '{0}-{1}-{2} {3}:{4}:{5}'.format(y, M + 1, d, 0 | h, 0 | m, 0 | s);
-                my.hide();
+            var vm = this, valueSet = function (y, M, d, h, m, s) {
+                vm.value = '{0}-{1}-{2} {3}:{4}:{5}'.format(y, M + 1, d, 0 | h, 0 | m, 0 | s);
+                vm.hide();
             };
             if (this.showYmd) {
                 this.onAt(this.$year, 'click', function () {
-                    my.yearPicker(+this.value);
+                    vm.yearPicker(+this.value);
                     return false;
                 }).onAt(this.$year.nextSibling, 'click', function () {
-                    my.yearPicker(+my.$year.value);
+                    vm.yearPicker(+vm.$year.value);
                     return false;
                 }).onAt(this.$month, 'click', function () {
-                    my.monthPicker(+this.value - 1);
+                    vm.monthPicker(+this.value - 1);
                     return false;
                 }).onAt(this.$month.nextSibling, 'click', function () {
-                    my.monthPicker(+my.$month.value - 1);
+                    vm.monthPicker(+vm.$month.value - 1);
                     return false;
                 }).onAt(this.$header, 'click', '[y-switch]', function () {
-                    my.tabYear(+v2.attr(this, 'y-switch'));
+                    vm.tabYear(+v2.attr(this, 'y-switch'));
                 }).onAt(this.$header, 'click', '[m-switch]', function () {
-                    my.tabMonth(+v2.attr(this, 'm-switch'));
+                    vm.tabMonth(+v2.attr(this, 'm-switch'));
                 }).onAt(this.$yearPicker, 'click', '[y]:not(.date-void)', function () {
-                    my.dayView(+this.innerHTML, my.ymd[1], my.ymd[2]);
-                    v2.addClass(my.$yearPicker, 'hidden');
+                    vm.dayView(+this.innerHTML, vm.ymd[1], vm.ymd[2]);
+                    v2.addClass(vm.$yearPicker, 'hidden');
                 }).onAt(this.$monthPicker, 'click', '[m]:not(.date-void)', function () {
-                    my.dayView(my.ymd[0], +this.innerHTML - 1, my.ymd[2]);
-                    v2.addClass(my.$monthPicker, 'hidden');
+                    vm.dayView(vm.ymd[0], +this.innerHTML - 1, vm.ymd[2]);
+                    v2.addClass(vm.$monthPicker, 'hidden');
                 });
                 this.$days.then(function (elem) {
-                    my.onAt(elem, 'click', function () {
+                    vm.onAt(elem, 'click', function () {
                         if (!v2.hasClass(elem, 'date-void')) {
-                            if (my.showHms) {
-                                my.dayView(+this.getAttribute('y'), +this.getAttribute('m'), +this.getAttribute('d'));
+                            if (vm.showHms) {
+                                vm.dayView(+this.getAttribute('y'), +this.getAttribute('m'), +this.getAttribute('d'));
                             } else {
                                 valueSet(+this.getAttribute('y'), +this.getAttribute('m'), +this.getAttribute('d'));
                             }
@@ -467,16 +467,16 @@
             }
             if (this.showHms) {
                 var hmsCallback = function (elem, hms) {
-                    my.hms[hms] = +elem.innerHTML;
-                    v2.addClass(my.$timePicker, 'hidden');
-                    my.timeView(my.hms[0], my.hms[1], my.hms[2]);
+                    vm.hms[hms] = +elem.innerHTML;
+                    v2.addClass(vm.$timePicker, 'hidden');
+                    vm.timeView(vm.hms[0], vm.hms[1], vm.hms[2]);
                 };
                 this.onAt(this.$hour, 'click', function () {
-                    return my.timePicker(0);
+                    return vm.timePicker(0);
                 }).onAt(this.$minute, 'click', function () {
-                    return my.timePicker(1);
+                    return vm.timePicker(1);
                 }).onAt(this.$sec, 'click', function () {
-                    return my.timePicker(2);
+                    return vm.timePicker(2);
                 }).onAt(this.$timePicker, 'click', '[h]:not(.date-void)', function () {
                     return hmsCallback(this, 0);
                 }).onAt(this.$timePicker, 'click', '[m]:not(.date-void)', function () {
@@ -486,33 +486,33 @@
                 });
             }
             this.on('click', '[aria-close]', function () {
-                my.hidePicker();
+                vm.hidePicker();
             }).onAt(this.$clear, 'click', function () {
-                my.value = '';
-                my.hide();
+                vm.value = '';
+                vm.hide();
             }).onAt(this.$now, 'click', function () {
                 var date = new Date(),
                     ymd = [date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds()];
-                if (my.isValid(ymd)) {
+                if (vm.isValid(ymd)) {
                     valueSet.apply(null, ymd);
                 } else {
-                    my.tip('日期超出限制范围!');
+                    vm.tip('日期超出限制范围!');
                 }
             }).onAt(this.$ok, 'click', function () {
-                if (my.valid) {
-                    valueSet(my.ymd[0], my.ymd[1], my.ymd[2], my.hms[0], my.hms[1], my.hms[2]);
+                if (vm.valid) {
+                    valueSet(vm.ymd[0], vm.ymd[1], vm.ymd[2], vm.hms[0], vm.hms[1], vm.hms[2]);
                 }
             });
             this.master.on('click', this.touch, function () {
-                my.show();
+                vm.show();
             });
             var touch = this.touch ? this.touch.$ || this.touch : this.master.$,
                 isString = v2.isString(touch);
             v2.on(document, 'click', function (e) {
                 var elem = e.target || e.srcElement;
-                if (elem === my.$ || v2.contains(my.$, elem)) return;
+                if (elem === vm.$ || v2.contains(vm.$, elem)) return;
                 if (isString ? v2.matches(elem, touch) || v2.take(touch, elem) : elem === touch || v2.contains(touch, elem)) return;
-                my.hide();
+                vm.hide();
             });
         }
     });

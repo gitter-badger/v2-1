@@ -8,13 +8,13 @@
             });
         },
         ajaxEdit: function () {
-            var my = this;
+            var vm = this;
             var ajax = {
                 url: null,
                 type: "GET",
-                params: my.data[0] //当前行的数据
+                params: vm.data[0] //当前行的数据
             };                 
-            ajax.params["" + my.fieldEdit + ""] = my.valueEdit;
+            ajax.params["" + vm.fieldEdit + ""] = vm.valueEdit;
             if (this.invoke("ajax-edit-ready", ajax) !== false) {
                 this.wait(true);
                 $.ajax(ajax.url, {
@@ -22,21 +22,21 @@
                     dataType: "json",
                     data: ajax.params,
                     success: function (json) {
-                        if (my.invoke("ajax-edit-success", json) !== false) {
+                        if (vm.invoke("ajax-edit-success", json) !== false) {
                             if (json.status) {
-                                my.invoke("ajax-edit-load", json);
-                                if (my.sleep(false)) {
-                                    my.load();
+                                vm.invoke("ajax-edit-load", json);
+                                if (vm.sleep(false)) {
+                                    vm.load();
                                 }
                             } else {
                                 v2.validate("<strong>错误&ensp;:</strong>&ensp;&ensp;" + json.message + "", "danger");
                             }
                         }
-                        my.wait(false);
+                        vm.wait(false);
                     },
                     error: function (xhr) {
-                        my.invoke("ajax-edit-error", xhr.status, xhr);
-                        my.wait(false);
+                        vm.invoke("ajax-edit-error", xhr.status, xhr);
+                        vm.wait(false);
                     }
                 });
             }
@@ -57,7 +57,7 @@
         },
         commit: function () {
             this.base.commit();
-            var my = this;
+            var vm = this;
             this.$.on("click", 'td', function () {
                 var dataDiv=$(this).children('div');
                 if ($(this).find("input").length == 0) {
@@ -66,9 +66,9 @@
                 };
             });
             this.$.on("blur", '[data-role]>input', function () {
-                my.valueEdit = $(this).val();
-                my.fieldEdit = $(this).attr("name");
-                my.ajaxEdit();
+                vm.valueEdit = $(this).val();
+                vm.fieldEdit = $(this).attr("name");
+                vm.ajaxEdit();
                 return false;
             });
         }

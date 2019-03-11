@@ -35,9 +35,9 @@
             }
         },
         commit: function () {
-            var my = this, elem = this.$input.get(0);
+            var vm = this, elem = this.$input.get(0);
             this.$.on("click", function () {
-                my.$.children().toggleClass("checked", my.checked = elem.checked);
+                vm.$.children().toggleClass("checked", vm.checked = elem.checked);
             });
         }
     });

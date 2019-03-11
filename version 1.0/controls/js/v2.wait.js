@@ -45,17 +45,17 @@
                 if (!this.animateState || this.animateState == "stoped") {
                     var
                         width,
-                        my = this,
+                        vm = this,
                         interval = 600,
                         intervalAnimate = function (jq) {
                             jq.css("border-color", "#FF6600").animate({ left: -2 * 1.6 * width - 2 * width, borderWidth: 0.85 * width }, interval, "linear", function () {
                                 jq.css("border-color", "#FF9900").animate({ left: 0, borderWidth: width }, interval, "linear", function () {
                                     jq.css("border-color", "#FF4400").animate({ left: 2 * 1.6 * width + 4 * width, borderWidth: 0.85 * width }, interval, "linear", function () {
                                         jq.css("border-color", "#FF9900").animate({ left: 0, borderWidth: width }, interval, "linear", function () {
-                                            if (my.animateState == "running") {
+                                            if (vm.animateState == "running") {
                                                 intervalAnimate(jq);
-                                            } else if (my.animateState == "stop") {
-                                                my.animateState = "stoped";
+                                            } else if (vm.animateState == "stop") {
+                                                vm.animateState = "stoped";
                                             }
                                         });
                                     });
@@ -65,7 +65,7 @@
                     var context = this.$.children();
                     context.each(function (i) {
                         var jq = context.eq(i);
-                        width = width || +jq.css("border-width") || (my.lg ? 15 : my.sm ? 6 : 10);
+                        width = width || +jq.css("border-width") || (vm.lg ? 15 : vm.sm ? 6 : 10);
                         if (i > 0) {
                             setTimeout(function () {
                                 intervalAnimate(jq.css({ left: 0, borderWidth: 0.65 * width }))

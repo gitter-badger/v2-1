@@ -660,7 +660,7 @@
             this.baseConfigs();
             var baseConfig = namespaceCache(tag);
             extendsObject(this, baseConfig, options);
-            var type, timer, isAsync, sleep = false, my = this, ajax = this.ajax, render = this.render, callbacks = [];
+            var type, timer, isAsync, sleep = false, vm = this, ajax = this.ajax, render = this.render, callbacks = [];
             if (ajax) {
                 if (this.access) {
                     if (!ajaxReady && v2.isFunction(jQuery)) {
@@ -678,7 +678,7 @@
                     this.render = function () {
                         var value = render.apply(this, core_slice.call(arguments));
                         this.sleep(function () {
-                            my.ajax();
+                            vm.ajax();
                             if (isAsync) {
                                 this.sleep(true);
                             }
@@ -701,9 +701,9 @@
                         v = !!(v - ~~sleep);
 
                         if (v && !sleep) {
-                            my.switchCase();
+                            vm.switchCase();
                             while (v = callbacks.shift()) {
-                                v.call(my, my);
+                                v.call(vm, vm);
                             }
                         }
                         return v === sleep;
@@ -712,7 +712,7 @@
                         if (sleep) {
                             callbacks.push(v);
                         } else {
-                            v.call(my, my);
+                            v.call(vm, vm);
                         }
                     }
                     if (type === "number") {
@@ -720,9 +720,9 @@
                         clearTimeout(timer);
                         timer = setTimeout(function () {
                             sleep = false;
-                            my.switchCase();
+                            vm.switchCase();
                             while (v = callbacks.shift()) {
-                                v.call(my, my);
+                                v.call(vm, vm);
                             }
                         }, v);
                     }

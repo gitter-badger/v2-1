@@ -18,14 +18,14 @@
     function ischeck(value) {
         return value == true || value == 1 || value && value.checked;
     }
-    function table_check(my, index, checked, field) {
+    function table_check(vm, index, checked, field) {
         checked = !!checked;
-        index = ~~index % my.pageSize;
-        field = field || my.stateField;
-        var site = my.siteCache[field];
+        index = ~~index % vm.pageSize;
+        field = field || vm.stateField;
+        var site = vm.siteCache[field];
         if (site || site === 0) {
-            var target = my.$thead.find(v2.format('input[data-field="{0}"]', field)),
-                context = my.$tbody.find(v2.format('input[data-field="{0}"]', field));
+            var target = vm.$thead.find(v2.format('input[data-field="{0}"]', field)),
+                context = vm.$tbody.find(v2.format('input[data-field="{0}"]', field));
             var jq = context.eq(index), type = jq.attr("type");
 
             if (type === "checkbox") {
@@ -36,24 +36,24 @@
             } else {
                 if (target.prop("checked")) {
                     target.prop("checked", !checked);
-                    v2.each(my.data, function (data, i) {
+                    v2.each(vm.data, function (data, i) {
                         data[site] = !checked;
                     });
                 }
                 context.prop("checked", !checked);
                 jq.prop("checked", checked);
             }
-            my.data[index][site] = checked;
+            vm.data[index][site] = checked;
         }
     }
-    function table_checkAll(my, checked, field) {
+    function table_checkAll(vm, checked, field) {
         checked = !!checked;
-        field = field || my.stateField;
-        var site = my.siteCache[field];
+        field = field || vm.stateField;
+        var site = vm.siteCache[field];
         if (site || site === 0) {
-            var context = my.$table.find(v2.format('input[data-field="{0}"]', field));
+            var context = vm.$table.find(v2.format('input[data-field="{0}"]', field));
             context.prop("checked", checked);
-            v2.each(my.data, function (data, i) {
+            v2.each(vm.data, function (data, i) {
                 data[site] = checked;
             });
         }
@@ -113,7 +113,7 @@
         '	</div>',
         '	<div class="clearfix"></div>',
         '</div>'];
-    function table(my, variable) {     
+    function table(vm, variable) {     
         var format = {}, fn = function (type) {
             format[type] = function (value, rowIndex) {
                 var htmls = ['<label><input data-role="', type, '" type="', type, '" data-field="{field}" data-row-index="', rowIndex, '"'];
@@ -317,7 +317,7 @@
                 var htmls = [];
                 v2.each(variable.paginationList = paginationList || variable.paginationList || [10, 25, 50, 100], function (size) {
                     htmls.push('<li role="menuitem"');
-                    if (my.pageSize == size) {
+                    if (vm.pageSize == size) {
                         htmls.push('<li role="menuitem" class="active"');
                     }
                     htmls.push('><a href="javascript:void(0)">' + size + '</a></li>');
@@ -452,21 +452,21 @@
                         dataType: "json",
                         data: ajax.params,
                         success: function (json) {
-                            if (my.invoke("ajax-success", json) !== false) {
+                            if (vm.invoke("ajax-success", json) !== false) {
                                 if (json.status) {
-                                    my.invoke("ajax-load", json);
-                                    if (my.sleep(false)) {
-                                        my.load();
+                                    vm.invoke("ajax-load", json);
+                                    if (vm.sleep(false)) {
+                                        vm.load();
                                     }
                                 } else {
                                     v2.validate("<strong>错误&ensp;:</strong>&ensp;&ensp;" + json.message + "", "danger");
                                 }
                             }
-                            my.wait(false);
+                            vm.wait(false);
                         },
                         error: function (xhr) {
-                            my.invoke("ajax-error", xhr.status, xhr);
-                            my.wait(false);
+                            vm.invoke("ajax-error", xhr.status, xhr);
+                            vm.wait(false);
                         }
                     });
                 }
@@ -579,9 +579,9 @@
                 if (data.length) {
                     v2.each(data, function (data, rowIndex) {
                         type = type || v2.type(data);
-                        htmls.push(my.tr(data, rowIndex, type));
+                        htmls.push(vm.tr(data, rowIndex, type));
                         if (variable.columnFixed) {
-                            fixed_htmls.push(my.tr(data, rowIndex, type, my.fixedCount));
+                            fixed_htmls.push(vm.tr(data, rowIndex, type, vm.fixedCount));
                         }
                     });
                 } else {
@@ -623,7 +623,7 @@
                 htmls.push(' data-row-index="', rowIndex = this.pageSize * (this.pageIndex - 1) + (rowIndex >>> 0) + 1, '"');
                 if (attributes) {
                     if (v2.isFunction(attributes)) {
-                        attributes = attributes.call(my, rowIndex, data);
+                        attributes = attributes.call(vm, rowIndex, data);
                     }
                     if (attributes && v2.isPlainObject(attributes)) {
                         v2.each(attributes, function () {
@@ -634,7 +634,7 @@
                 htmls.push('>');
                 for (var i = 0, len = ~~limit || columns.length; i < len; i++) {
                     column = columns[i];
-                    htmls.push(my.td(column, column.field === "#" ? rowIndex : type === "object" ? data[column.field] : data[column.offset], rowIndex, data, column.offset));
+                    htmls.push(vm.td(column, column.field === "#" ? rowIndex : type === "object" ? data[column.field] : data[column.offset], rowIndex, data, column.offset));
                 }
                 htmls.push('</tr>');
                 return htmls.join('');
@@ -660,7 +660,7 @@
 
                 if (attributes = column.attributes) {
                     if (v2.isFunction(attributes)) {
-                        attributes = attributes.call(my, value, rowIndex, data, colIndex);
+                        attributes = attributes.call(vm, value, rowIndex, data, colIndex);
                     }
                     if (attributes && v2.isPlainObject(attributes)) {
                         v2.each(attributes, function () {
@@ -701,7 +701,7 @@
                 table_checkAll(this, false, field);
             },
             getSelections: function (field) {
-                field = field || my.stateField;
+                field = field || vm.stateField;
                 var site = this.siteCache[field];
                 if (site || site === 0) {
                     return v2.find(this.data, function (data) {
@@ -710,7 +710,7 @@
                 }
             },
             getAllSelections: function (field) {
-                field = field || my.stateField;
+                field = field || vm.stateField;
                 var site = this.siteCache[field];
                 if (site || site === 0) {
                     return v2.filter(this.data, function (data) {
@@ -726,9 +726,9 @@
 
                 v2.each(this.columns, function (column, i) {
                     if (column.radio || column.checkbox) {
-                        var site = my.siteCache[column.field],
+                        var site = vm.siteCache[column.field],
                             selector = v2.format('input[data-field="{0}"]', column.field);
-                        my.$thead.find(selector).prop("checked", v2.every(my.data, function (data) {
+                        vm.$thead.find(selector).prop("checked", v2.every(vm.data, function (data) {
                             return ischeck(data[site]);
                         }));
                     }
@@ -787,12 +787,12 @@
             commit: function () {
                 if (variable.headFixed || variable.columnFixed) {
                     $(window).resize(function () {
-                        my.restore();
+                        vm.restore();
                     });
                 }
                 if (variable.headFixed) {
                     this.$tableVertical.on("scroll", function () {
-                        my.$headFixed.prop("scrollLeft", this.scrollLeft);
+                        vm.$headFixed.prop("scrollLeft", this.scrollLeft);
                     });
                 }
                 if (variable.columnFixed) {
@@ -800,47 +800,47 @@
                     this.$tableVertical.on("scroll", function () {
                         if (timer) clearTimeout(timer);
                         timer = setTimeout(function () {
-                            my.$columnFixed.removeClass("shadow");
+                            vm.$columnFixed.removeClass("shadow");
                         }, 1000);
-                        my.$columnFixed.addClass("shadow");
-                        my.$columnFixed.prop("scrollTop", this.scrollTop);
+                        vm.$columnFixed.addClass("shadow");
+                        vm.$columnFixed.prop("scrollTop", this.scrollTop);
                     });
                     this.$.find("tbody").on("mouseenter", "tr", function () {
-                        my.$.find(v2.format('[data-row-index="{0}"]', $(this).attr("data-row-index")))
+                        vm.$.find(v2.format('[data-row-index="{0}"]', $(this).attr("data-row-index")))
                             .addClass("hover").siblings().removeClass("hover");
                     }).on("mouseleave", "tr", function () {
-                        my.$.find(v2.format('[data-row-index="{0}"]', $(this).attr("data-row-index")))
+                        vm.$.find(v2.format('[data-row-index="{0}"]', $(this).attr("data-row-index")))
                             .removeClass("hover");
                     });
                 }
                 this.$.on("click", 'input[type="checkbox"],input[type="radio"]', function () {
-                    my[this.checked ? "checkAll" : "uncheckAll"]($(this).attr("data-field"));
+                    vm[this.checked ? "checkAll" : "uncheckAll"]($(this).attr("data-field"));
                 });
                 this.$.on("click", 'input[type="checkbox"],input[type="radio"]', function () {
                     var jq = $(this);
-                    my[this.checked ? "check" : "uncheck"](~~jq.attr("data-row-index") - 1, jq.attr("data-field"));
+                    vm[this.checked ? "check" : "uncheck"](~~jq.attr("data-row-index") - 1, jq.attr("data-field"));
                 });
                 this.$.on("click", '[aria-label="previous"]', function () {
                     if (!rclass_disabled.test(this.className)) {
-                        my.updatePagination(my.pageIndex - 1, my.pageSize, my.pageTotal);
+                        vm.updatePagination(vm.pageIndex - 1, vm.pageSize, vm.pageTotal);
                     }
                     return false;
                 });
                 this.$.on("click", '[aria-label="next"]', function () {
                     if (!rclass_disabled.test(this.className)) {
-                        my.updatePagination(my.pageIndex + 1, my.pageSize, my.pageTotal);
+                        vm.updatePagination(vm.pageIndex + 1, vm.pageSize, vm.pageTotal);
                     }
                     return false;
                 });
                 this.$.on("click", '[data-role="pagination"]', function () {
                     if (!rclass_active.test(this.className)) {
-                        my.updatePagination(+$(this).text());
+                        vm.updatePagination(+$(this).text());
                     }
                     return false;
                 });
                 $(document).on("click", function (e) {
-                    if (my.paginationDropdown && (!e.target || !v2.contains(my.$.get(0), e.target))) {
-                        my.paginationDropdown.parent().removeClass("open");
+                    if (vm.paginationDropdown && (!e.target || !v2.contains(vm.$.get(0), e.target))) {
+                        vm.paginationDropdown.parent().removeClass("open");
                     }
                 });
                 this.$.on("click", '[data-toggle="dropdown"]', function () {
@@ -852,7 +852,7 @@
                         var size = +jq.children().text();
                         jq.parent().parent().removeClass("open");
                         jq.addClass("active").siblings().removeClass("active");
-                        my.updatePagination(1, size);
+                        vm.updatePagination(1, size);
                     }
                     return false;
                 });

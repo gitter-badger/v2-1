@@ -121,7 +121,7 @@
             Massage: function (massage) {
                 massage = massage || control.validity.validError();
                 if (massage) {
-                    var my = this;
+                    var vm = this;
                     if (!this.isReady) {
                         this.$ = this.$ || control.$.prepend('<div class="input-validity"><div class="validity-status">!</div><span class="validity-massage"></span></div>').children().eq(0);
                     }
@@ -129,7 +129,7 @@
                     this.$.removeClass("hidden");
                     if (timer) clearTimeout(timer);
                     timer = setTimeout(function () {
-                        my.$.addClass("hidden");
+                        vm.$.addClass("hidden");
                         timer = null;
                     }, 3000);
                     this.isReady = true;
@@ -145,7 +145,7 @@
         };
         return new ValidityStateError();
     }
-    function input(my) {
+    function input(vm) {
         return new Object({
             ctor: function () {
 
@@ -218,11 +218,11 @@
                 if (this.validity.isValid(value = value == null ? "" : value)) {
                     this.$input.val(this.value = value);
                     if (invoke) {
-                        my.invoke("valid-success");
+                        vm.invoke("valid-success");
                     }
                 } else {
                     if (invoke) {
-                        my.invoke("valid-error", my.validity);
+                        vm.invoke("valid-error", vm.validity);
                     }
                     if (this.validityError) {
                         this.validityError.Massage();
@@ -246,24 +246,24 @@
                     }
                     var format = type === "date" ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss";
                     this.$input.on("click", function () {
-                        if (!window.laydate) return my.validityError.Massage("正在初始化日期控件！");
+                        if (!window.laydate) return vm.validityError.Massage("正在初始化日期控件！");
                         laydate({
                             keepYmd: type === "time", onchange: function (value) {
-                                my.$input.val(my.value = value);
-                            }, format: format, min: my.invoke("date-min"), max: my.invoke("date-max")
+                                vm.$input.val(vm.value = value);
+                            }, format: format, min: vm.invoke("date-min"), max: vm.invoke("date-max")
                         });
                     });
                 }
                 this.$input.on("click", function () {
-                    my.invoke("event-click");
+                    vm.invoke("event-click");
                 });
                 this.$input.on("keydown", function (e) {
                     var value = this.value;
                     var code = e.keyCode || e.which;
-                    if (value.length === my.maxlength && !(code === 8 || code === 46)) {
+                    if (value.length === vm.maxlength && !(code === 8 || code === 46)) {
                         return false;
                     }
-                    if (my.type === "number") {
+                    if (vm.type === "number") {
                         value = v2.trim(value);
                         if (code === 107 || code === 109 || code === 187 || code === 189) {
                             value = value.replace(/[+-]+/g, "");
@@ -283,7 +283,7 @@
                             return false;
                         }
                     }
-                    if (my.invoke("keyboard-keyCode", code) === false) {
+                    if (vm.invoke("keyboard-keyCode", code) === false) {
                         return false;
                     }
                 });
@@ -295,33 +295,33 @@
                     isChinese = false;
                 });
                 var valueChangeTimer, isValidCallback = function () {
-                    var value = my.value = this.value;
-                    if (my.validity.isValid(value)) {
-                        my.invoke("valid-success");
-                        if (my.validityError) {
-                            my.validityError.hide();
+                    var value = vm.value = this.value;
+                    if (vm.validity.isValid(value)) {
+                        vm.invoke("valid-success");
+                        if (vm.validityError) {
+                            vm.validityError.hide();
                         }
                     } else {
-                        my.invoke("valid-error", my.validity);
-                        if (my.validityError) {
-                            my.validityError.Massage();
+                        vm.invoke("valid-error", vm.validity);
+                        if (vm.validityError) {
+                            vm.validityError.Massage();
                         }
                     }
-                    if (value !== my.value) this.value = my.value;
+                    if (value !== vm.value) this.value = vm.value;
                 }, valueChangeCallback = function (elem) {
                     var value = elem.value;
-                    if (my.type === "number") {
+                    if (vm.type === "number") {
                         value = value.replace(/[^-+.0-9]/g, "");
                         if (elem.value !== value) elem.value = value;
                     }
-                    if (isChinese || my.value === value) return;
-                    var value = my.value = elem.value;
-                    my.invoke("value-change", value);
-                    if (my.value !== value) value = elem.value = my.value;
-                    if (my.timelyValid) {
+                    if (isChinese || vm.value === value) return;
+                    var value = vm.value = elem.value;
+                    vm.invoke("value-change", value);
+                    if (vm.value !== value) value = elem.value = vm.value;
+                    if (vm.timelyValid) {
                         isValidCallback.call(elem, value);
                     }
-                    if (my.value !== value) elem.value = my.value;
+                    if (vm.value !== value) elem.value = vm.value;
                 }, valueChangeProxyCallback = function (elem) {
                     if (v2.bro.isMsie || v2.bro.isChrome || v2.isFirefox && v2.isFirefox >= 9) {
                         return valueChangeCallback(elem);
@@ -335,7 +335,7 @@
                 this.$input.on("keyup", function (e) {
                     var code = e.keyCode || e.which;
                     if (code === 13 || code === 108) {
-                        my.invoke("keyboard-enter");
+                        vm.invoke("keyboard-enter");
                     }
                     valueChangeProxyCallback(this);
                 });

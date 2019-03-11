@@ -1,5 +1,5 @@
 (function ($, v2) {
-    function treeView(my) {
+    function treeView(vm) {
         var myParentId;
         return new Object({
             ctor: function () {//构造函数的指定属性
@@ -52,22 +52,22 @@
                         dataType: "json",
                         data: ajax.params,
                         success: function (json) {
-                            if (my.invoke("ajax-success", json) !== false) {
+                            if (vm.invoke("ajax-success", json) !== false) {
                                 if (json.status) {
-                                    my.invoke("ajax-load", json);
-                                    if (my.sleep(false)) {
-                                        my.load();
+                                    vm.invoke("ajax-load", json);
+                                    if (vm.sleep(false)) {
+                                        vm.load();
                                     }
-                                    my.invoke("ajax-complete");
+                                    vm.invoke("ajax-complete");
                                 } else {
                                     v2.validate("<strong>错误&ensp;:</strong>&ensp;&ensp;" + json.message + "", "danger");
                                 }
                             }
-                            my.wait(false);
+                            vm.wait(false);
                         },
                         error: function (xhr) {
-                            my.invoke("ajax-error", xhr.status, xhr);
-                            my.wait(false);
+                            vm.invoke("ajax-error", xhr.status, xhr);
+                            vm.wait(false);
                         }
                     });
                 }
@@ -104,22 +104,22 @@
                 this.$.on("click", '[data-key]', function () {
                     var jq = $(this);
                     if (jq.hasClass("active")) return false;
-                    my.key = jq.attr("data-key");
-                    my.value = jq.children('[data-domain="true"]').text();
-                    my.node = (function (data) {
-                        return v2.find(data || my.nodes["*"], function (item) {
-                            return item.id == my.key;
+                    vm.key = jq.attr("data-key");
+                    vm.value = jq.children('[data-domain="true"]').text();
+                    vm.node = (function (data) {
+                        return v2.find(data || vm.nodes["*"], function (item) {
+                            return item.id == vm.key;
                         });
-                    })(my.nodes[jq.parentsUntil(".expand").parent().attr("data-key")]);
-                    my.$.find(".active").removeClass("active");
+                    })(vm.nodes[jq.parentsUntil(".expand").parent().attr("data-key")]);
+                    vm.$.find(".active").removeClass("active");
                     jq.addClass("active");
-                    my.invoke("select-change", my.node);
+                    vm.invoke("select-change", vm.node);
                     return false;
                 });
                 this.$.on("click", '[data-sign="+"]', function () {
                     myParentId = $(this).parent().addClass("expand").attr("data-key");
-                    if (!my.nodes[myParentId]) {
-                        my.ajax();
+                    if (!vm.nodes[myParentId]) {
+                        vm.ajax();
                     }
                     return false;
                 });

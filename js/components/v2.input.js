@@ -128,7 +128,7 @@
                 //this.$.removeClass("hidden");
                 //if (timer) clearTimeout(timer);
                 //timer = setTimeout(function () {
-                //    my.$.addClass("hidden");
+                //    vm.$.addClass("hidden");
                 //    timer = null;
                 //}, 3000);
                 return false;
@@ -145,14 +145,11 @@
         add: function (control) {
             this[this.length] = control;
             this.length += 1;
-            var my = this, destory = control.destory;
+            var vm = this, destory = control.destory;
             control.destory = function (deep) {
-                my.remove(this);
+                vm.remove(this);
                 return destory.call(this, deep);
             };
-            control.on('click', function () {
-                my.checked(control);
-            });
         },
         checked: function (control) {
             var i = 0, node;
@@ -293,7 +290,7 @@
         },
         usb: function () {
             this.base.usb();
-            this.define('pattern min max minlength maxlength placeholder validationMessage')
+            this.define('name pattern min max minlength maxlength placeholder validationMessage')
                 .define('type', true)
                 .define({
                     value: function (value) {
@@ -310,11 +307,15 @@
                 });
             if (this.type === 'radio' || this.type === 'checkbox') {
                 var defaultChecked = false;
+                this.defaultChecked = this.checked;
                 this.define('checked', function (checked) {
-                    if (defaultChecked === !checked) {
-                        this.toggleClass('checked', checked = !!checked);
-                        this.invoke('checked-change', defaultChecked = checked);
+                    if (defaultChecked === checked) return;
+                    if (checked && this.type === 'radio') {
+                        var radioGroup = radioCache(this.name);
+                        radioGroup.checked(this);
                     }
+                    this.toggleClass('checked', checked = !!checked);
+                    this.invoke('checked-change', defaultChecked = checked);
                 }).define('text', function (text) {
                     this.emptyAt(this.$massage)
                         .appendAt(this.$massage, document.createTextNode(text));
@@ -351,12 +352,12 @@
             }
 
             var isChinese,
-                my = this,
-                value = my.value,
+                vm = this,
+                value = vm.value,
                 fixCallbackChange = function () {
                     if (isChinese || value === this.value) return;
                     if (this.checkValidity()) {
-                        return my.invoke('input-change', value = this.value);
+                        return vm.invoke('input-change', value = this.value);
                     }
                     return value = this.value;
                 };
@@ -369,7 +370,7 @@
                 .on("keyup", function (e) {
                     var code = e.keyCode || e.which;
                     if (code === 13 || code === 108) {
-                        my.invoke("keyboard-enter");
+                        vm.invoke("keyboard-enter");
                     }
                     fixCallbackChange.call(this);
                 });

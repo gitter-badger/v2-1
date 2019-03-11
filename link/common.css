@@ -6,3 +6,8 @@
 .modal.in {
     display: block;
 }
+
+.form-group .control-label {
+    padding-left: 8px;
+    padding-right: 5px;
+}

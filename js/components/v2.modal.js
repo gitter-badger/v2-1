@@ -171,14 +171,14 @@
         },
         render: function () {
             this.base.render();
-            var my = this;
+            var vm = this;
             this.buttons = [{
                 text: "确定",
                 type: "submit",
                 events: {
                     click: function () {
-                        if (my.invoke('ok-event') !== false) {
-                            my.close();
+                        if (vm.invoke('ok-event') !== false) {
+                            vm.close();
                         }
                     }
                 }
@@ -192,14 +192,14 @@
         },
         render: function () {
             this.base.render();
-            var my = this;
+            var vm = this;
             this.buttons = [{
                 text: "确定",
                 type: "submit",
                 events: {
                     click: function () {
-                        if (my.invoke('ok-event') !== false) {
-                            my.close();
+                        if (vm.invoke('ok-event') !== false) {
+                            vm.close();
                         }
                     }
                 }
@@ -208,8 +208,8 @@
                 type: "button",
                 events: {
                     click: function () {
-                        if (my.invoke('cancel-event') !== false) {
-                            my.close();
+                        if (vm.invoke('cancel-event') !== false) {
+                            vm.close();
                         }
                     }
                 }
