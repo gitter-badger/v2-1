@@ -85,9 +85,6 @@
             /** 显示重置按钮 */
             this.showReset = false;
 
-            /** 按钮布局 */
-            this.buttonLayout = 'text-center';//{text-[left|center|right]}
-
             /** 按钮组 */
             this.buttons = [];
         },
@@ -95,6 +92,9 @@
             var vm = this;
             this.base.render();
             this.addClass('form');
+            if (this.master && this.master.tag === "navbar") {
+                this.addClass('navbar-form');
+            }
             if (this.inline) {
                 this.addClass('form-inline');
             }
@@ -231,20 +231,22 @@
         },
         resolve: function (data) {
             this.__data_ = data || {};
-            var buttons = this.buttons;
-            if (!buttons || !buttons.length) return;
-            var elem = this.append('.form-group'.htmlCoding()).last();
-            if (this.buttonLayout) {
-                this.addClassAt(elem, this.buttonLayout);
-            }
-            v2.each(buttons, this.stack(function (option) {
-                this.constructor(option.tag || 'button', v2.extend({ $$: elem }, option));
+            v2.each(this.buttons, this.stack(function (option) {
+                this.constructor(option.tag || 'button', option);
             }), this);
         },
         reset: function () {
             this.data = this.__data_;
         },
+        reportValidity: function () {
+            var i = 0, control;
+            while (control = this.controls[i++]) {
+                if (control.tag === 'input' && !control.reportValidity()) return false;
+            }
+            return true;
+        },
         submit: function () {
+            if (!this.reportValidity()) return;
             var vm = this,
                 ajax = {
                     url: null,

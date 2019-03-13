@@ -1,7 +1,9 @@
-﻿@import 'core.css';
+﻿@charset "UTF-8";
+@import 'core.css';
 @import 'components/v2.input.css';
 @import 'components/v2.datePicker.css';
 @import'components/skins/defaults/v2.datePicker.css';
+@import 'components/v2.layout.css';
 
 .modal.in {
     display: block;

@@ -73,6 +73,9 @@
         render: function (variable) {
             this.base.render();
             this.addClass('btn');
+            if (this.master && this.master.tag === 'navbar') {
+                this.addClass('navbar-btn');
+            }
             switch (this.type) {
                 case 'submit':
                     this.addClass('btn-primary');

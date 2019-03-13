@@ -478,12 +478,52 @@
         when(arr: ArrayLike<any>): ArrayThen;
         /** 返回主元素的第一个元素 */
         first(): Element;
+        /**
+         * 查询指定元素的第一个子元素
+         * @param elem 元素
+         */
+        first(elem: Element): Element;
+        /**
+         * 满足选择器的第一个元素的第一个子元素。
+         * @param selector 选择器
+         */
+        first(selector: string): Element;
         /** 返回主元素的最后一个元素 */
         last(): Element;
+        /**
+         * 查询指定元素的最后一个子元素
+         * @param elem 元素
+         */
+        last(elem: Element): Element;
+        /**
+         * 满足选择器的第一个元素的最后一个子元素。
+         * @param selector 选择器
+         */
+        last(selector: string): Element;
         /** 返回主元素的上一个兄弟元素 */
         prev(): Element;
+        /**
+         * 指定元素的上一个兄弟元素。
+         * @param elem 元素
+         */
+        prev(elem: Element): Element;
+        /**
+         * 满足选择器的第一个元素的上一个兄弟元素。
+         * @param selector
+         */
+        prev(selector: string): Element;
         /** 返回主元素的下一个兄弟元素 */
-        next(): Element
+        next(): Element;
+        /**
+         * 指定元素的下一个兄弟元素。
+         * @param elem 元素
+         */
+        next(elem: Element): Element;
+        /**
+         * 满足选择器的第一个元素的下一个兄弟元素。
+         * @param selector 选择器
+         */
+        next(selector: string): Element;
     }
     /** 控件 */
     interface V2Control extends V2ControlBase {
@@ -503,6 +543,8 @@
         readonly namespace: string;
         /** 是否准备完成（默认：false） */
         readonly isReady: boolean;
+        /** 控件依赖关系，依赖加载完成时，请执行“resolve”方法，通知控件依赖已准备就绪。 */
+        components: PlainObject<(resolve: Function) => any>;
         /**
          * 隐藏或显示控件(默认：true)
          * @param visible 为true时显示控件，否则隐藏控件

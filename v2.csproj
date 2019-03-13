@@ -65,7 +65,10 @@
     <Content Include="js\components\v2.form.js" />
     <Content Include="js\components\v2.input.js" />
     <Content Include="js\components\v2.inputGroup.js" />
+    <Content Include="js\components\v2.layout.js" />
     <Content Include="js\components\v2.modal.js" />
+    <Content Include="js\components\v2.navbar.js" />
+    <Content Include="js\components\v2.nav.js" />
     <Content Include="js\components\v2.pagingBar.js" />
     <Content Include="js\components\v2.select.js" />
     <Content Include="js\lib\ajax\axios.js" />
@@ -78,6 +81,7 @@
     <Content Include="link\components\skins\defaults\v2.datePicker.css" />
     <Content Include="link\components\v2.datePicker.css" />
     <Content Include="link\components\v2.input.css" />
+    <Content Include="link\components\v2.layout.css" />
     <Content Include="link\lib\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="js\lib\vue\vue.js" />
     <Content Include="js\lib\vue\vue.min.js" />
@@ -102,6 +106,7 @@
     <Content Include="link\lib\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="link\lib\fonts\glyphicons-halflings-regular.woff" />
     <Content Include="link\lib\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include=".travis.yml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

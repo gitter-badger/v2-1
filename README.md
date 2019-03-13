@@ -1,3 +1,9 @@
+# V2
+ 
+>[![Build Status](https://travis-ci.org/cocsharp/v2.svg?branch=master)](https://travis-ci.org/cocsharp/v2) 
+>
+> A valuable technology object.
+
 # 使用说明
 
 ## 格式化字符串（一）

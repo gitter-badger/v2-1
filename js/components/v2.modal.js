@@ -122,7 +122,7 @@
                 }
             }, true);
         },
-        bodyBuild: function (data) {
+        build: function (data) {
             var type = v2.type(data);
             this.emptyAt(this.$body);
             switch (type) {
@@ -146,7 +146,7 @@
             }
         },
         resolve: function (data) {
-            this.bodyBuild(data);
+            this.build(data);
             v2.each(this.buttons, this.stack(function (option) {
                 option.$$ = this.$footer;
                 this.constructor(option.tag || 'button', option);

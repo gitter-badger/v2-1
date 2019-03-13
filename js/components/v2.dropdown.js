@@ -50,7 +50,7 @@
         },
         resolve: function (data) {
             var divider = '"<li role="separator" class="divider"></li>"',
-                fmt = '$"<li data-index="{index}" class="{item.disabled?"disabled"}"><a data-id="{item.id}" href="{item.url??"#"}">{item.name??item.text??"匿名"}</a></li>"';
+                fmt = '$"<li data-index="{index}" class="{item.disabled?"disabled"}"><a data-id="{item.id}" href="{item.url??item.href??"#"}">{item.name??item.text??"匿名"}</a></li>"';
             if (v2.isPlainObject(data)) {
                 divider = data.divider || data.separator || divider;
                 fmt = data.format || data.fmt || fmt;
@@ -84,11 +84,11 @@
             this.on('click', '[data-index]:not(.disabled)', function () {
                 vm.selectedIndex = +v2.attr(this, 'data-index');
             });
-            this.master.on('click', this.touch, function () {
+            var touch = this.touch ? this.touch.$ || this.touch : this.$$,
+                isString = v2.isString(touch);
+            this.master.on('click', touch, function () {
                 vm.toggle();
             });
-            var touch = this.touch ? this.touch.$ || this.touch : this.master.$,
-                isString = v2.isString(touch);
             v2.on(document, 'click', function (e) {
                 var elem = e.target || e.srcElement;
                 if (isString ? v2.matches(elem, touch) || v2.take(touch, elem) : elem === touch || v2.contains(touch, elem)) return;

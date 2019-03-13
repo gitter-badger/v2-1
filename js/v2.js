@@ -777,17 +777,33 @@
             }
             return new ArrayThen(extra || []);
         },
-        first: function () {
-            return this.$.firstElementChild || v2.sibling(this.$.firstChild, 'nextSibling', true);
+        first: function (extra) {
+            extra = extra || this.$;
+            if (v2.isString(extra)) {
+                extra = this.take(extra);
+            }
+            return extra.firstElementChild || v2.sibling(extra.firstChild, 'nextSibling', true);
         },
-        last: function () {
-            return this.$.lastElementChild || v2.sibling(this.$.lastChild, 'previousSibling', true);
+        last: function (extra) {
+            extra = extra || this.$;
+            if (v2.isString(extra)) {
+                extra = this.take(extra);
+            }
+            return extra.lastElementChild || v2.sibling(extra.lastChild, 'previousSibling', true);
         },
-        prev: function () {
-            return this.$.previousElementSibling || v2.sibling(this.$, 'previousSibling');
+        prev: function (extra) {
+            extra = extra || this.$;
+            if (v2.isString(extra)) {
+                extra = this.take(extra);
+            }
+            return extra.previousElementSibling || v2.sibling(extra, 'previousSibling');
         },
-        next: function () {
-            return this.$.nextElementSibling || v2.sibling(this.$, 'nextSibling');
+        next: function (extra) {
+            extra = extra || this.$;
+            if (v2.isString(extra)) {
+                extra = this.take(extra);
+            }
+            return extra.nextElementSibling || v2.sibling(extra, 'nextSibling');
         },
         baseConfigs: function (option) {
             this.base = this.base || {};
